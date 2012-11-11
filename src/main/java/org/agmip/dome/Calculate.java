@@ -21,12 +21,14 @@ public class Calculate extends Command {
     public static final Logger log = LoggerFactory.getLogger(Calculate.class);
 
     public static void run(HashMap m, String var, String[] args, boolean replace) {
+        var = var.toLowerCase();
         String fun = args[0].toUpperCase();
         String[] newArgs =  Arrays.copyOfRange(args, 1, args.length);
         HashMap<String, ArrayList<String>> calcResults = null;
         boolean mapModified = false;
         boolean destructiveMode = false;
 
+		log.info("Attempting to apply DOME function: {}", fun);
         // These functions use the proper modifcation protocols.
         if (fun.equals("OFFSET_DATE()")) {
             if (newArgs.length < 2) {
@@ -56,8 +58,14 @@ public class Calculate extends Command {
                 destructiveMode = true;
                 calcResults = DomeFunctions.percentAvailWaterContent(m, newArgs[0]);
             }
-        // These functions use older modification protocols.
         // These functions modify the map directly.
+        } else if (fun.equals("AUTO_PDATE()")) {
+            if (newArgs.length < 4) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            }
+            ExperimentHelper.getAutoPlantingDate(newArgs[0], newArgs[1], newArgs[2], newArgs[3], m);
+            mapModified = true;
         } else if (fun.equals("FERT_DIST()")) {
             if (newArgs.length < 6) {
                 log.error("Not enough arguments for {}", fun);
@@ -120,6 +128,9 @@ public class Calculate extends Command {
     // }
     
     private static void execute(HashMap<String, Object> m, HashMap<String, ArrayList<String>> calcResults, boolean replace, boolean destructiveMode) {
+        log.debug("Executing with: {}", calcResults);
+        if (calcResults.isEmpty()) {return;}
+
         for (Map.Entry<String, ArrayList<String>> entry : calcResults.entrySet()) {
             String targetVariable = entry.getKey();
             String targetPath = Command.getPathOrRoot(targetVariable);

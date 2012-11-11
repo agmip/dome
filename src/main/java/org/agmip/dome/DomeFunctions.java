@@ -17,6 +17,7 @@ import org.agmip.common.Functions;
 
 public class DomeFunctions {
     private static final Logger log = LoggerFactory.getLogger(Functions.class);
+    private static final String MULTIPLY_DEFAULT_FACTOR="1";
     /**
      * Do not instatiate this
      */
@@ -97,26 +98,42 @@ public class DomeFunctions {
         int f1Size = factors1.size();
 
         if (f1Size < 2) {
-            String fact1 = "1";
+            String fact1 = MULTIPLY_DEFAULT_FACTOR;
             if (f1Size == 1) {
                 fact1 = factors1.get(0);
+                if (fact1 == null) {
+                    log.error("Missing factor to multiply: {}", f1);
+                    return results;
+                }
             }
             for (String fact2 : factors2) {
+                if (fact2 == null) {
+                    log.error("Missing factor to multiply: {}", f2);
+                    return new HashMap<String, ArrayList<String>>();
+                }
                 output.add(Functions.multiply(fact1, fact2));
             }
         } else {
             int f2Size = factors2.size();
             int iter = (f1Size >= f2Size) ? f1Size : f2Size;
             for (int i=0; i < iter; i++) {
-                String fact1 = "1";
-                String fact2 = (f2Size == 1) ? factors2.get(0) : "1";
+                String fact1 = MULTIPLY_DEFAULT_FACTOR;
+                String fact2 = (f2Size == 1) ? factors2.get(0) : MULTIPLY_DEFAULT_FACTOR;
 
                 if (i < f1Size) {
                     fact1 = factors1.get(i);
+                    if (fact1 == null) {
+                        log.error("Missing factor to multiply: {}", f1);
+                        return new HashMap<String, ArrayList<String>>();
+                    }
                 }
 
                 if (i < f2Size) {
                     fact2 = factors2.get(i);
+                    if (fact2 == null) {
+                        log.error("Missing factor to multiply: {}", f2);
+                        return new HashMap<String, ArrayList<String>>();
+                    }
                 }
                 output.add(Functions.multiply(fact1, fact2));
             }
@@ -205,7 +222,7 @@ public class DomeFunctions {
     }
 
     private static ArrayList<String> buildInputArray(HashMap<String, Object> m, String source) {
-        log.debug("BIA source: [{}]", source);
+        log.error("BIA source: [{}]", source);
         String sourceVariable = "";
         String sourceEventType = "";
         ArrayList<String> results = new ArrayList<String>();
@@ -224,7 +241,7 @@ public class DomeFunctions {
                 }
 
                 ArrayList<HashMap<String, Object>> pointer = Command.traverseAndGetSiblings(m, sourceVariable);
-                log.debug("Current pointer [{}]: {}", sourceVariable, pointer);
+                log.error("Current pointer [{}]: {}", sourceVariable, pointer);
                 for (HashMap<String, Object> entry : pointer) {
                     if ((sourceIsEvent && (((String) entry.get("event"))).equals(sourceEventType)) || (! sourceIsEvent)){
                         String var =  AcePathfinderUtil.setEventDateVar(sourceVariable, sourceIsEvent);

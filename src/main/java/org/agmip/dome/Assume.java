@@ -5,6 +5,8 @@ import java.util.HashMap;
 
 import org.agmip.ace.AcePathfinder;
 import org.agmip.ace.util.AcePathfinderUtil;
+import org.agmip.util.MapUtil;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,21 +37,30 @@ public class Assume extends Command {
     }
 
     private static void fill(HashMap m, String var, String val, String path) {
+        log.debug("Filling {} with {}", path, val);
         if (path.contains("@")) {
             boolean isEvent = false;
+            String eventType = "";
             if (path.contains("!")) {
+                String[] tmp = path.split("[@!]");
+                eventType = tmp[2];
                 isEvent = true;
             }
             ArrayList<HashMap<String, Object>> contents = Command.traverseAndGetSiblings(m, var);
+            log.debug("Pre-insert contents: {}", contents.toString());
             if (contents.size() != 0) {
                 for (HashMap<String, Object> item : contents) {
-                    if (! varHasValue(item, var, isEvent)) {
-                        item.put(var, val);
+                    String liveEvent = MapUtil.getValueOr(item, "event", "");
+                    if ( !isEvent || (isEvent && eventType.equals(liveEvent))) {
+                        if (! varHasValue(item, var, isEvent)) {
+                            item.put(var, val);
+                        }
                     }
                 }
             } else {
                 if (path.contains("!")) {
                     // There is no contents event to start with... let's create it.
+                    log.debug("Creating new event in fill for {}", var);
                     AcePathfinderUtil.insertValue(m, var, val, path);
                 }
             }
@@ -65,20 +76,24 @@ public class Assume extends Command {
     }
 
     private static void replace(HashMap m, String var, String val, String path) {
-        log.debug("Current data: {}", m.toString());
         log.debug("Replacing {} with path {}", var, path);
 
         if (path.contains("@")) {
             boolean isEvent = false;
+            String eventType = "";
             if (path.contains("!")) {
                 isEvent = true;
+                String[] tmp = path.split("[@!]");
+                eventType = tmp[2];
             }
             ArrayList<HashMap<String, Object>> contents = traverseAndGetSiblings(m, var);
             if (contents.size() == 0) {
                 AcePathfinderUtil.insertValue(m, var, val, path);
             } else {
                 for (HashMap<String, Object> item: contents) {
-                    item.put(AcePathfinderUtil.setEventDateVar(var, isEvent), val);
+                    if ((isEvent && MapUtil.getValueOr(item, "event", "").equals(eventType)) || !isEvent) {
+                        item.put(AcePathfinderUtil.setEventDateVar(var, isEvent), val);
+                    }
                 }
             }
             log.debug("Current contents: {}", contents.toString());

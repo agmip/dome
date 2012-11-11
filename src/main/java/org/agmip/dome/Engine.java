@@ -6,6 +6,8 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.agmip.dome.DomeUtil;
+
 /**
  * The Engine of the DOME, which reads in a DOME ruleset and applies
  * the rules to a dataset.
@@ -25,14 +27,31 @@ public class Engine {
 
     /**
      * Construct a new engine with the ruleset passed in.
-     * @param rules A collection of rules.
+     * @param dome A full DOME
      */
-    public Engine(ArrayList<HashMap<String,String>> rules) {
+    public Engine(HashMap<String, Object> dome) {
+        this.rules = DomeUtil.getDomeRules(dome);
+    }
+
+    /**
+     * Construct a new engine with the ruleset passed in.
+     * @param rules A DOME ruleset.
+     */
+    public Engine(ArrayList<HashMap<String, String>> rules) {
         this.rules = rules;
     }
 
     protected Engine() {
         this.rules = new ArrayList<HashMap<String,String>>();
+    }
+
+
+    /**
+     * Add more rules to the Engine
+     * @param rules new set of rules to append (from another DOME)
+     */
+    public void appendRules(ArrayList<HashMap<String, String>> rules) {
+        this.rules.addAll(rules);
     }
 
     /**
