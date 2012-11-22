@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.agmip</groupId>
     <artifactId>dome</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -15,6 +14,34 @@
 
     <name>The DOME</name>
     <url>http://agmip.org/</url>
+
+    <issueManagement>
+        <url>https://github.com/agmip/dome/issues</url>
+        <system>GitHub Issues</system>
+    </issueManagement>
+
+    <licenses>
+        <license>
+            <name>BSD License</name>
+            <url>https://raw.github.com/agmip/dome/master/LICENSE</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/agmip/dome</url>
+        <connection>scm:git:git://github.com/agmip/dome.git</connection>
+        <developerConnection>scm:git:git@github.com:agmip/dome.git</developerConnection>
+      <tag>HEAD</tag>
+  </scm>
+
+    <developers>
+        <developer>
+            <email>cvillalobos@ufl.edu</email>
+            <name>Christopher Villalobos</name>
+            <url>https://github.com/frostbytten</url>
+            <id>frostbytten</id>
+        </developer>
+    </developers>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
