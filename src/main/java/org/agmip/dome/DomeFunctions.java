@@ -222,7 +222,7 @@ public class DomeFunctions {
     }
 
     private static ArrayList<String> buildInputArray(HashMap<String, Object> m, String source) {
-        log.error("BIA source: [{}]", source);
+        log.debug("BIA source: [{}]", source);
         String sourceVariable = "";
         String sourceEventType = "";
         ArrayList<String> results = new ArrayList<String>();
@@ -241,7 +241,7 @@ public class DomeFunctions {
                 }
 
                 ArrayList<HashMap<String, Object>> pointer = Command.traverseAndGetSiblings(m, sourceVariable);
-                log.error("Current pointer [{}]: {}", sourceVariable, pointer);
+                log.debug("Current pointer [{}]: {}", sourceVariable, pointer);
                 for (HashMap<String, Object> entry : pointer) {
                     if ((sourceIsEvent && (((String) entry.get("event"))).equals(sourceEventType)) || (! sourceIsEvent)){
                         String var =  AcePathfinderUtil.setEventDateVar(sourceVariable, sourceIsEvent);
