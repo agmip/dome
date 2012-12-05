@@ -90,10 +90,15 @@ public class Assume extends Command {
             if (contents.size() == 0) {
                 AcePathfinderUtil.insertValue(m, var, val, path);
             } else {
+                boolean replaced = false;
                 for (HashMap<String, Object> item: contents) {
                     if ((isEvent && MapUtil.getValueOr(item, "event", "").equals(eventType)) || !isEvent) {
+                        replaced = true;
                         item.put(AcePathfinderUtil.setEventDateVar(var, isEvent), val);
                     }
+                }
+                if (! replaced) {
+                    AcePathfinderUtil.insertValue(m, var, val, path);
                 }
             }
             log.debug("Current contents: {}", contents.toString());

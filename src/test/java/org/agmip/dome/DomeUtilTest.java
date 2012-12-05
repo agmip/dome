@@ -37,13 +37,13 @@ public class DomeUtilTest {
         test.put("man_id", "81");
 
 
-        assertEquals("does not match test info", test, DomeUtil.getDomeInfo(dome));
+        assertEquals("does not match test info", test, DomeUtil.getInfo(dome));
     }
 
     @Test
     public void testGetDomeBlankInfo() {
         dome.put("info", null);
-        assertEquals("doesn't return blank info", new HashMap<String, String>(), DomeUtil.getDomeInfo(dome));
+        assertEquals("doesn't return blank info", new HashMap<String, String>(), DomeUtil.getInfo(dome));
     }
 
     @Test
@@ -55,25 +55,37 @@ public class DomeUtilTest {
         rule.put("args", "Sample");
         test.add(rule);
 
-        assertEquals("does not match test rule", test, DomeUtil.getDomeRules(dome));
+        assertEquals("does not match test rule", test, DomeUtil.getRules(dome));
     }
 
     @Test
     public void testGetDomeBlankRules() {
         dome.put("rules", null);
-        assertEquals("doesn't return blank rules", new ArrayList<HashMap<String, String>>(), DomeUtil.getDomeRules(dome));
+        assertEquals("doesn't return blank rules", new ArrayList<HashMap<String, String>>(), DomeUtil.getRules(dome));
     }
 
     @Test
     public void testGenerateDomeName() {
-        String test = "SAMPLE-99--81-";
+        String test = "SAMPLE-99--81--";
         assertEquals("incorrect name generated", test, DomeUtil.generateDomeName(dome));
     }
 
     @Test
     public void testUnpackDomeName() {
-        String test = "SAMPLE-99--81-";
-        assertEquals("incorrect unpacked values", DomeUtil.getDomeInfo(dome), DomeUtil.unpackDomeName(test));
+        String test = "SAMPLE-99--81--";
+        assertEquals("incorrect unpacked values", DomeUtil.getInfo(dome), DomeUtil.unpackDomeName(test));
+    }
+
+    @Test
+    public void testBlankUnpackDomeName() {
+        String test = "-----";
+        assertEquals("incorrect unpacked values", new HashMap<String, String>(), DomeUtil.unpackDomeName(test));
+    }
+
+    @Test
+    public void testInvalidUnpackDomeName() {
+        String test="InvalidDomeName";
+        assertEquals("incorrect unpacked values", new HashMap<String, String>(), DomeUtil.unpackDomeName(test));
     }
 
     @After
