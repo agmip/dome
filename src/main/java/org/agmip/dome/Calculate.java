@@ -59,13 +59,13 @@ public class Calculate extends Command {
                 calcResults = DomeFunctions.percentAvailWaterContent(m, newArgs[0]);
             }
         // These functions modify the map directly.
-        } else if (fun.equals("AUTO_PDATE()")) {
-            if (newArgs.length < 4) {
-                log.error("Not enough arguments for {}", fun);
-                return;
-            }
-            ExperimentHelper.getAutoPlantingDate(newArgs[0], newArgs[1], newArgs[2], newArgs[3], m);
-            mapModified = true;
+        // } else if (fun.equals("AUTO_PDATE()")) {
+        //     if (newArgs.length < 4) {
+        //         log.error("Not enough arguments for {}", fun);
+        //         return;
+        //     }
+        //     calcResults = ExperimentHelper.getAutoPlantingDate(newArgs[0], newArgs[1], newArgs[2], newArgs[3], m);
+        //     //mapModified = true;
         } else if (fun.equals("FERT_DIST()")) {
             if (newArgs.length < 6) {
                 log.error("Not enough arguments for {}", fun);
@@ -114,6 +114,14 @@ public class Calculate extends Command {
             }
             ExperimentHelper.getStableCDistribution(newArgs[0], newArgs[1], newArgs[2], m);
             mapModified = true;
+        } else if (fun.equals("REMOVE_ALL_EVENTS()")) {
+            if (! replace) {
+                log.error("Cannot remove all events from a FILL command");
+                return;
+            } else {
+                DomeFunctions.removeAllEvents(m);
+                mapModified = true;
+            }
         } else {
             log.error("DOME Function {} unsupported", fun);
             return;
@@ -149,6 +157,7 @@ public class Calculate extends Command {
                 }
 
                 ArrayList<HashMap<String, Object>> pointer = traverseAndGetSiblings(m, targetVariable);
+                log.debug("CALC EXECUTE() pointer: {}", pointer);
                 int pointerSize = pointer.size();
                 int sourceSize = values.size();
 
