@@ -80,17 +80,15 @@ public abstract class Command {
         if (pointer == null) {
             pointer = m;
         }
+
+        log.debug("TTP Pointer: {}", pointer);
         
         String[] temp = path.split("[@!]");
-        if (! pointer.containsKey(temp[0])) {
+        if (! pointer.containsKey(temp[1])) {
             return def;
         } else {
-            pointer = (HashMap<String, Object>) pointer.get(temp[0]);
-            if(! pointer.containsKey(temp[1])) {
-                return def;
-            } else {
-                return (ArrayList<HashMap<String, Object>>) pointer.get(temp[1]);
-            }
+            //pointer = (HashMap<String, Object>) pointer.get(temp[0]);
+            return (ArrayList<HashMap<String, Object>>) pointer.get(temp[1]);
         }
     }
 
