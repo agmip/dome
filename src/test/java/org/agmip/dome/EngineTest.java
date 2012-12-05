@@ -1,14 +1,20 @@
 package org.agmip.dome;
 
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
 
 import org.agmip.ace.util.AcePathfinderUtil;
+import org.agmip.util.JSONAdapter;
+import org.agmip.util.MapUtil;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +25,10 @@ public class EngineTest {
     private Engine e;
 
     private void createRule(String method, String var, String args) {
+        createEngineRule(e, method, var, args, false);
+    }
+
+    private void createEngineRule(Engine eng, String method, String var, String args, boolean isGenerator) {
         HashMap<String, String> rule = new HashMap<String, String>();
         rule.put("cmd", method);
         if (var != null) {
@@ -27,9 +37,16 @@ public class EngineTest {
         if (args != null) {
             rule.put("args", args);
         }
-
-        e.addRule(rule);
+        if (isGenerator) {
+            eng.addGenerator(rule);
+        } else {
+            eng.addRule(rule);
+        }
     }
+
+
+
+
 
     @Before
     public void startUp() {
@@ -302,6 +319,106 @@ public class EngineTest {
         createRule("FILL", "slsc", "STABLEC()|0.55|20|60");
         e.apply(testMap);
         log.info("Modified Map: {}", testMap.toString());
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    @Ignore
+    public void GenerateMachakosFastTest() {
+        log.info("=== GENERATE() TEST ===");
+        URL resource = this.getClass().getResource("/mach_fast.json");
+        String json = "";
+        try {
+            json = new Scanner(new File(resource.getPath()), "UTF-8").useDelimiter("\\A").next();
+        } catch (Exception ex) {
+            log.error("Unable to find mach_fast.json");
+            assertTrue(false);
+        }
+        createRule("REPLACE", "sc_year", "1981");
+        createRule("REPLACE", "exp_dur", "30");
+        createRule("REPLACE", "pdate", "REMOVE_ALL_EVENTS()");
+        createEngineRule(e, "REPLACE", "pdate", "AUTO_PDATE()|0501|0701|25|5", true);
+        e.enableGenerators();
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        try {
+            testMap = JSONAdapter.fromJSON(json);
+        } catch (Exception ex) {
+            log.error("Unable to convert JSON");
+            assertTrue(false);
+        }
+
+        ArrayList<HashMap<String, Object>> fp = MapUtil.flatPack(testMap);
+        log.debug("Flatpack count: {}", fp.size());
+        HashMap<String, Object> tm = fp.get(0);
+        e.apply(tm);
+        ArrayList<HashMap<String, Object>> newExperiments = e.runGenerators(tm);
+        assertEquals("Improper number of generated experiments", 30, newExperiments.size());
+        int i = 0;
+        for(HashMap<String, Object> exp : newExperiments) {
+            i++;
+            log.debug("Generated Exp {}: {}", i, exp.toString());
+        }
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    @Ignore
+    public void GenerateMachakosFullTest() {
+        log.info("=== GENERATE() TEST ===");
+        URL resource = this.getClass().getResource("/mach_full.json");
+        String json = "";
+        try {
+            json = new Scanner(new File(resource.getPath()), "UTF-8").useDelimiter("\\A").next();
+        } catch (Exception ex) {
+            log.error("Unable to find mach_full.json");
+            assertTrue(false);
+        }
+        createRule("REPLACE", "sc_year", "1981");
+        createRule("REPLACE", "exp_dur", "30");
+        createRule("REPLACE", "pdate", "REMOVE_ALL_EVENTS()");
+        createEngineRule(e, "REPLACE", "pdate", "AUTO_PDATE()|0501|0701|25|5", true);
+        e.enableGenerators();
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        try {
+            testMap = JSONAdapter.fromJSON(json);
+        } catch (Exception ex) {
+            log.error("Unable to convert JSON");
+            assertTrue(false);
+        }
+
+        ArrayList<HashMap<String, Object>> fp = MapUtil.flatPack(testMap);
+        ArrayList<HashMap<String, Object>> full = new ArrayList<HashMap<String, Object>>();
+        log.debug("Flatpack count: {}", fp.size());
+        for (HashMap<String, Object> tm : fp) {
+            e.apply(tm);
+            ArrayList<HashMap<String, Object>> newExperiments = e.runGenerators(tm);
+            full.addAll(newExperiments);
+        }
+        ArrayList<HashMap<String, Object>> exp = MapUtil.getRawPackageContents(testMap, "experiments");
+        exp.clear();
+        exp.addAll(full);
+        log.debug("Replaced with generated data");
+        fp = MapUtil.flatPack(testMap);
+        log.debug("Flatpack count: {}", fp.size());
+
+
+        Engine postEngine = new Engine();
+        createEngineRule(postEngine, "REPLACE", "fedate", "FERT_DIST()|2|FE005|AP002|10|14|33.3|45|66.7", false);
+
+        int i=0;
+        int target = fp.size();
+
+        for(HashMap<String, Object> post : fp) {
+            i++;
+            double pct = (i / target) * 100;
+            //if (pct % 5 == 0) {
+                log.debug("{}%", pct);
+            //}
+            postEngine.apply(post);
+        }
+
+        log.debug("51st Entry: {}", Command.traverseAndGetSiblings(fp.get(51), "pdate"));
+        
         log.info("=== END TEST ===");
     }
     

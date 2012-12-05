@@ -26,9 +26,10 @@ public class DomeUtil {
             String rapId    = MapUtil.getValueOr(info, "rap_id", "");
             String manId    = MapUtil.getValueOr(info, "man_id", "");
             String rapVer   = MapUtil.getValueOr(info, "rap_ver", "");
+            String desc     = MapUtil.getValueOr(info, "description", "");
             // Minimun length is 4
 
-            return region+"-"+stratum+"-"+rapId+"-"+manId+"-"+rapVer;
+            return region+"-"+stratum+"-"+rapId+"-"+manId+"-"+rapVer+"-"+desc;
         } else {
             return "";
         }
@@ -36,17 +37,17 @@ public class DomeUtil {
 
     public static HashMap<String, String> unpackDomeName(String domeName) {
         HashMap<String, String> info = new HashMap<String, String>();
-        String[] parts = domeName.split("\\-");
-        log.debug("{}", parts);
-        log.debug("{}", parts.length);
-        if (parts.length != 4 && parts.length != 5) {
+        String[] parts = domeName.split("[\\-]", 6);
+        log.debug("Parts length: {}", parts.length);
+        // for(int i=0; i < parts.length; i++) {
+        //      log.debug(parts[i]);
+        // }
+        if (parts.length != 6 && parts.length != 5) {
             log.error("unpackDomeName() provided an invalid name: {}", domeName);
             return new HashMap<String, String>();
         }
 
-        for(int i=0; i < parts.length; i++) {
-            log.debug(parts[i]);
-        }
+        
         if (! parts[0].equals(""))
             info.put("region",  parts[0]);
         if (! parts[1].equals(""))
@@ -55,13 +56,18 @@ public class DomeUtil {
             info.put("rap_id",  parts[2]);
         if (! parts[3].equals(""))
             info.put("man_id",  parts[3]);
-        if (parts.length == 5) {
+        if (! parts[4].equals(""))
             info.put("rap_ver", parts[4]);
+        if (parts.length == 6 && ! parts[5].equals(""))
+            info.put("description", parts[5]);
+
+        if (info.isEmpty()) {
+            log.error("unpackDomeName() provided an invalid name: {}", domeName);
         }
         return info;
     }
 
-    public static HashMap<String, String> getDomeInfo(HashMap<String, Object> dome) {
+    public static HashMap<String, String> getInfo(HashMap<String, Object> dome) {
         if (dome.containsKey("info")) {
             try {
                 HashMap<String, String> info = (HashMap<String, String>) dome.get("info");
@@ -80,7 +86,7 @@ public class DomeUtil {
         }
     }
 
-    public static ArrayList<HashMap<String, String>> getDomeRules(HashMap<String, Object> dome) {
+    public static ArrayList<HashMap<String, String>> getRules(HashMap<String, Object> dome) {
         if(dome.containsKey("rules")) {
             try {
                 ArrayList<HashMap<String, String>> rules = (ArrayList<HashMap<String, String>>) dome.get("rules");
@@ -96,6 +102,41 @@ public class DomeUtil {
         } else {
             log.error("getDomeRules() could not retreive the DOME rules from {}", dome.toString());
             return new ArrayList<HashMap<String, String>>();
+        }
+    }
+
+    public static ArrayList<HashMap<String, String>> getGenerators(HashMap<String, Object> dome) {
+        if(dome.containsKey("generators")) {
+            try {
+                ArrayList<HashMap<String, String>> rules = (ArrayList<HashMap<String, String>>) dome.get("generators");
+                if (rules == null) {
+                    return new ArrayList<HashMap<String, String>>();
+                }
+                return rules;
+            } catch (Exception ex) {
+                // Could not convert
+                log.error("getDomeGenerators() could not retreive the DOME generators from {}", dome.toString());
+                return new ArrayList<HashMap<String, String>>();
+            }
+        } else {
+            log.error("getDomeGenerators() could not retreive the DOME generators from {}", dome.toString());
+            return new ArrayList<HashMap<String, String>>();
+        }
+    }
+
+    public static boolean hasGenerators(HashMap<String, Object> dome) {
+        if (dome.containsKey("generators")) {
+            ArrayList<HashMap<String, String>> rules = (ArrayList<HashMap<String, String>>) dome.get("generators");
+                if (rules == null) {
+                    return false;
+                }
+                if (rules.size() == 0) {
+                    return false;
+                } else {
+                    return true;
+                }
+        } else {
+            return false;
         }
     }
 }

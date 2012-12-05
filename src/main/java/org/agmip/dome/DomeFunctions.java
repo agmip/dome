@@ -189,6 +189,17 @@ public class DomeFunctions {
         return results;
     }
 
+    public static void removeAllEvents(HashMap m) {
+        log.debug("ENTERING THE FRAY!!!");
+        String path = AcePathfinder.INSTANCE.getPath("pdate");
+        log.debug("Looking for path ! {}", path);
+        HashMap pointer = AcePathfinderUtil.traverseToPoint(m, path);
+        if (pointer != null) {
+            log.debug("Pointer RAE: {}", pointer.toString());
+            pointer.remove("events");
+        }
+    }
+
     protected static class KVPair {
         private final String key;
         private final String value;
