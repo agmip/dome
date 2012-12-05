@@ -323,6 +323,7 @@ public class EngineTest {
     }
 
     @Test
+    @Ignore
     public void GenerateMachakosFastTest() {
         log.info("=== GENERATE() TEST ===");
         URL resource = this.getClass().getResource("/mach_fast.json");
@@ -360,7 +361,8 @@ public class EngineTest {
         log.info("=== END TEST ===");
     }
 
-        @Test
+    @Test
+    @Ignore
     public void GenerateMachakosFullTest() {
         log.info("=== GENERATE() TEST ===");
         URL resource = this.getClass().getResource("/mach_full.json");
