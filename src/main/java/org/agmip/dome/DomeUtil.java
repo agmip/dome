@@ -6,7 +6,7 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.agmip.util.MapUtil;
+//import org.agmip.util.MapUtil;
 
 public class DomeUtil {
     private static final Logger log = LoggerFactory.getLogger(DomeUtil.class);
@@ -21,12 +21,12 @@ public class DomeUtil {
                 return "";
             }
 
-            String region   = MapUtil.getValueOr(info, "region", "");
-            String stratum  = MapUtil.getValueOr(info, "stratum", "");
-            String rapId    = MapUtil.getValueOr(info, "rap_id", "");
-            String manId    = MapUtil.getValueOr(info, "man_id", "");
-            String rapVer   = MapUtil.getValueOr(info, "rap_ver", "");
-            String desc     = MapUtil.getValueOr(info, "description", "");
+            String region   = (info.get("region") == null) ? "" : info.get("region");
+            String stratum  = (info.get("stratum") == null) ? "" : info.get("stratum");
+            String rapId    = (info.get("rap_id") == null) ? "" : info.get("rap_id"); 
+            String manId    = (info.get("man_id") == null) ? "" : info.get("man_id"); 
+            String rapVer   = (info.get("rap_ver") == null) ? "" : info.get("rap_ver");
+            String desc     = (info.get("description") == null) ? "" : info.get("description");
             // Minimun length is 4
 
             return region+"-"+stratum+"-"+rapId+"-"+manId+"-"+rapVer+"-"+desc;
