@@ -51,7 +51,7 @@ public class Generate {
         // Clear out existing events, since they are invalid!
         String exname = MapUtil.getValueOr(m, "exname", "");
         if (exname.contains("__")) {
-            exname = exname.substring(0,exname.indexOf("_"));
+            exname = exname.substring(0,exname.indexOf("__"));
         }
         String[] exvalue = {exname+"__"+id};
         Assume.run(m, "exname", exvalue, true);
