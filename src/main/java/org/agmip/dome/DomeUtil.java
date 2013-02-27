@@ -21,15 +21,14 @@ public class DomeUtil {
                 return "";
             }
 
-            String region   = (info.get("region") == null) ? "" : info.get("region");
+            String region   = (info.get("reg_id") == null) ? "" : info.get("reg_id");
             String stratum  = (info.get("stratum") == null) ? "" : info.get("stratum");
-            String rapId    = (info.get("rap_id") == null) ? "" : info.get("rap_id"); 
-            String manId    = (info.get("man_id") == null) ? "" : info.get("man_id"); 
+            String climId   = (info.get("clim_id") == null) ? "" : info.get("clim_id");
+            String rapId    = (info.get("rap_id") == null) ? "" : info.get("rap_id");
+            String manId    = (info.get("man_id") == null) ? "" : info.get("man_id");
             String rapVer   = (info.get("rap_ver") == null) ? "" : info.get("rap_ver");
             String desc     = (info.get("description") == null) ? "" : info.get("description");
-            // Minimun length is 4
-
-            return region+"-"+stratum+"-"+rapId+"-"+manId+"-"+rapVer+"-"+desc;
+            return region+"-"+stratum+"-"+climId+"-"+rapId+"-"+manId+"-"+rapVer+"-"+desc;
         } else {
             return "";
         }
@@ -37,29 +36,31 @@ public class DomeUtil {
 
     public static HashMap<String, String> unpackDomeName(String domeName) {
         HashMap<String, String> info = new HashMap<String, String>();
-        String[] parts = domeName.split("[\\-]", 6);
+        String[] parts = domeName.split("[\\-]", 7);
         log.debug("Parts length: {}", parts.length);
         // for(int i=0; i < parts.length; i++) {
         //      log.debug(parts[i]);
         // }
-        if (parts.length != 6 && parts.length != 5) {
+        if (parts.length != 7 && parts.length != 6) {
             log.error("unpackDomeName() provided an invalid name: {}", domeName);
             return new HashMap<String, String>();
         }
 
-        
+
         if (! parts[0].equals(""))
-            info.put("region",  parts[0]);
+            info.put("reg_id",  parts[0]);
         if (! parts[1].equals(""))
             info.put("stratum", parts[1]);
         if (! parts[2].equals(""))
-            info.put("rap_id",  parts[2]);
+            info.put("clim_id",  parts[2]);
         if (! parts[3].equals(""))
-            info.put("man_id",  parts[3]);
+            info.put("rap_id",  parts[3]);
         if (! parts[4].equals(""))
-            info.put("rap_ver", parts[4]);
-        if (parts.length == 6 && ! parts[5].equals(""))
-            info.put("description", parts[5]);
+            info.put("man_id", parts[4]);
+        if (! parts[5].equals(""))
+            info.put("rap_ver", parts[5]);
+        if (parts.length == 7 && ! parts[5].equals(""))
+            info.put("description", parts[6]);
 
         if (info.isEmpty()) {
             log.error("unpackDomeName() provided an invalid name: {}", domeName);

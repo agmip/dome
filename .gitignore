@@ -1,3 +1,6 @@
 target/*
 *.sw?
 mach*.json
+.settings/*
+.classpath
+.project

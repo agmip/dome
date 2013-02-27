@@ -14,8 +14,9 @@ public class DomeUtilTest {
     @Before
     public void setup() {
         HashMap<String, String> info = new HashMap<String, String>();
-        info.put("region", "SAMPLE");
+        info.put("reg_id", "SAMPLE");
         info.put("stratum", "99");
+        info.put("clim_id", "0XXX");
         info.put("man_id", "81");
         dome.put("info", info);
 
@@ -32,8 +33,9 @@ public class DomeUtilTest {
     @Test
     public void testGetDomeInfo() {
         HashMap<String, String> test = new HashMap<String, String>();
-        test.put("region", "SAMPLE");
+        test.put("reg_id", "SAMPLE");
         test.put("stratum", "99");
+        test.put("clim_id", "0XXX");
         test.put("man_id", "81");
 
 
@@ -66,19 +68,19 @@ public class DomeUtilTest {
 
     @Test
     public void testGenerateDomeName() {
-        String test = "SAMPLE-99--81--";
+        String test = "SAMPLE-99-0XXX--81--";
         assertEquals("incorrect name generated", test, DomeUtil.generateDomeName(dome));
     }
 
     @Test
     public void testUnpackDomeName() {
-        String test = "SAMPLE-99--81--";
+        String test = "SAMPLE-99-0XXX--81--";
         assertEquals("incorrect unpacked values", DomeUtil.getInfo(dome), DomeUtil.unpackDomeName(test));
     }
 
     @Test
     public void testBlankUnpackDomeName() {
-        String test = "-----";
+        String test = "------";
         assertEquals("incorrect unpacked values", new HashMap<String, String>(), DomeUtil.unpackDomeName(test));
     }
 
