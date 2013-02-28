@@ -86,7 +86,7 @@ public class Calculate extends Command {
                         }
                     }
                     log.debug("Calling with offset: {} and pct: {}", offset, pct);
-                    
+
                     String [] offsetArr = offset.toArray(new String[offset.size()]);
                     String [] pctArr = pct.toArray(new String[pct.size()]);
                     ExperimentHelper.getFertDistribution(newArgs[0], newArgs[1], newArgs[2], newArgs[3], offsetArr, pctArr, m);
@@ -105,7 +105,7 @@ public class Calculate extends Command {
                 log.error("Not enough arguments for {}", fun);
                 return;
             }
-            SoilHelper.getRootDistribution(newArgs[0], newArgs[1], newArgs[2], m);
+            SoilHelper.getRootDistribution(var, newArgs[0], newArgs[1], newArgs[2], m);
             mapModified = true;
         } else if (fun.equals("STABLEC()")) {
             if (newArgs.length < 3) {

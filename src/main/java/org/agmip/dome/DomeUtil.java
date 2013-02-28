@@ -28,7 +28,9 @@ public class DomeUtil {
             String manId    = (info.get("man_id") == null) ? "" : info.get("man_id");
             String rapVer   = (info.get("rap_ver") == null) ? "" : info.get("rap_ver");
             String desc     = (info.get("description") == null) ? "" : info.get("description");
-            return region+"-"+stratum+"-"+climId+"-"+rapId+"-"+manId+"-"+rapVer+"-"+desc;
+
+            String out = region+"-"+stratum+"-"+climId+"-"+rapId+"-"+manId+"-"+rapVer+"-"+desc;
+            return out.toUpperCase();
         } else {
             return "";
         }
@@ -36,7 +38,7 @@ public class DomeUtil {
 
     public static HashMap<String, String> unpackDomeName(String domeName) {
         HashMap<String, String> info = new HashMap<String, String>();
-        String[] parts = domeName.split("[\\-]", 7);
+        String[] parts = domeName.toUpperCase().split("[\\-]", 7);
         log.debug("Parts length: {}", parts.length);
         // for(int i=0; i < parts.length; i++) {
         //      log.debug(parts[i]);
