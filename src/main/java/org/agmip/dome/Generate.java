@@ -67,7 +67,7 @@ public class Generate {
                 log.error("Not enough arguments for {}", fun);
                 return new HashMap<String, ArrayList<String>>();
             }
-            return ExperimentHelper.getAutoPlantingDate(args[0], args[1], args[2], args[3], m);
+            return ExperimentHelper.getAutoPlantingDate(m, args[0], args[1], args[2], args[3]);
         } else {
             log.error("DOME Function {} unsupported.", fun);
             return new HashMap<String, ArrayList<String>>();

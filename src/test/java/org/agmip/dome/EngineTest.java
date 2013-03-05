@@ -249,10 +249,12 @@ public class EngineTest {
         HashMap<String, Object> testMap = new HashMap<String, Object>();
         AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
         AcePathfinderUtil.insertValue(testMap, "fen_tot", "60");
+        log.info("=== FERT_DIST() TEST ===");
         log.debug("Starting map: {}", testMap);
         createRule("REPLACE", "fedate", "FERT_DIST()|2|FE005|AP002|10|14|33.3|45|66.7");
         e.apply(testMap);
         log.debug("Modified map: {}", testMap.toString());
+        log.info("=== END TEST ===");
     }
 
     @Test
@@ -260,10 +262,12 @@ public class EngineTest {
         HashMap<String, Object> testMap = new HashMap<String, Object>();
         AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
         AcePathfinderUtil.insertValue(testMap, "omamt", "1000");
+        log.info("=== OM_DIST() TEST ===");
         log.debug("Starting map: {}", testMap);
         createRule("FILL", "omdat", "OM_DIST()|-7|RE003|8.3|5|50|2.5");
         e.apply(testMap);
         log.debug("Modified Map: {}", testMap.toString());
+        log.info("=== END TEST ===");
     }
 
     @Test
@@ -419,6 +423,120 @@ public class EngineTest {
 
         log.debug("51st Entry: {}", Command.traverseAndGetSiblings(fp.get(51), "pdate"));
         
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    public void CalcTampTavTest() {
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19890101");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "26.3");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "16.2");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19890102");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "25");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "15.1");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19890103");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "25.1");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "15.4");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19890201");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "27.9");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "17.4");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19890202");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "27.9");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "17.4");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19890203");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "28.1");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "13.8");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19890303");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "27.5");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "13");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19890304");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "31");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "16.9");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19890305");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "32.3");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "16.5");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19900101");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "20.4");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "5.2");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19900102");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "20.1");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "3.2");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19900103");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "25");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "8.1");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19900201");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "29.6");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "13.6");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19900202");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "29.2");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "17.7");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19900203");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "30.4");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "15.6");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19900204");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "28.3");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "16.2");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19900205");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "19.4");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "6.9");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19900301");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "26.2");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "8.8");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19900302");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "26.2");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "11.7");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19900303");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "21.5");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "10.8");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19901229");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "29.3");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "16.1");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19901230");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "30.1");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "17.4");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19901231");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "25");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "16.9");
+
+        log.info("=== TAMPAV() TEST ===");
+        log.info("Starting map: {}", testMap.toString());
+        createRule("FILL", "TAMP,TAV", "TAMPAV()");
+        e.apply(testMap);
+        log.info("Modified Map: {}", testMap.toString());
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    public void CalcIcnDistTest() {
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        AcePathfinderUtil.insertValue(testMap, "icbl", "15");
+        AcePathfinderUtil.insertValue(testMap, "icbl", "30");
+        AcePathfinderUtil.insertValue(testMap, "icbl", "60");
+        AcePathfinderUtil.insertValue(testMap, "icbl", "90");
+        AcePathfinderUtil.insertValue(testMap, "icbl", "120");
+        AcePathfinderUtil.insertValue(testMap, "icbl", "150");
+        AcePathfinderUtil.insertValue(testMap, "icbl", "180");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "15");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.15");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "30");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.16");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "60");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.21");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "90");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.23");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "120");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.31");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "150");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.31");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "180");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.31");
+
+        log.info("=== ICN_DIST() TEST ===");
+        log.info("Starting map: {}", testMap.toString());
+        createRule("FILL", "icn_tot,ichn4,icno3", "ICN_DIST()|25");
+        e.apply(testMap);
+        log.info("Modified Map: {}", testMap.toString());
         log.info("=== END TEST ===");
     }
     
