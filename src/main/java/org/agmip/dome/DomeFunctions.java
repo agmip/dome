@@ -13,6 +13,7 @@ import org.agmip.ace.AcePathfinder;
 import org.agmip.ace.util.AcePathfinderUtil;
 import org.agmip.util.MapUtil;
 import org.agmip.common.Functions;
+import org.agmip.functions.WeatherHelper;
 
 
 public class DomeFunctions {
@@ -186,6 +187,29 @@ public class DomeFunctions {
         results.put("icbl", outputICBL);
         results.put("ich2o", outputICH2O);
         log.debug("PCTAWC() returned: {}", results.toString());
+        return results;
+    }
+    
+    public static HashMap<String, ArrayList<String>> getTavAndAmp(HashMap m) {
+        HashMap<String, ArrayList<String>> results = new HashMap<String, ArrayList<String>>();
+        HashMap<String, String> ret = WeatherHelper.getTavAndAmp(m);
+        String tav = ret.get("tav");
+        if (tav == null) {
+            log.error("Failed to calculate TAV with given data set");
+        } else {
+            ArrayList<String> arr = new ArrayList();
+            arr.add(tav);
+            results.put("tav", arr);
+        }
+        String tamp = ret.get("tamp");
+        if (tamp == null) {
+            log.error("Failed to calculate TAMP with given data set");
+        } else {
+            ArrayList<String> arr = new ArrayList();
+            arr.add(tamp);
+            results.put("tamp", arr);
+        }
+        
         return results;
     }
 
