@@ -15,6 +15,7 @@ import org.agmip.common.Functions;
 // Temporary imports to integrate @MengZhang codebase from another project
 import org.agmip.functions.ExperimentHelper;
 import org.agmip.functions.SoilHelper;
+import org.agmip.util.MapUtil;
 
 
 public class Calculate extends Command {
@@ -66,6 +67,17 @@ public class Calculate extends Command {
         //     }
         //     calcResults = ExperimentHelper.getAutoPlantingDate(newArgs[0], newArgs[1], newArgs[2], newArgs[3], m);
         //     //mapModified = true;
+        } else if (fun.equals("TAMPAV()")) {
+            if (newArgs.length != 0) {
+                log.warn("Too many arguments for {}", fun);
+            }
+            calcResults = DomeFunctions.getTavAndAmp(m);
+        } else if (fun.equals("ICN_DIST()")) {
+            if (newArgs.length < 1) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            }
+            calcResults = SoilHelper.getIcnDistribution(m, newArgs[0]);
         } else if (fun.equals("FERT_DIST()")) {
             if (newArgs.length < 6) {
                 log.error("Not enough arguments for {}", fun);
@@ -89,7 +101,9 @@ public class Calculate extends Command {
 
                     String [] offsetArr = offset.toArray(new String[offset.size()]);
                     String [] pctArr = pct.toArray(new String[pct.size()]);
-                    ExperimentHelper.getFertDistribution(newArgs[0], newArgs[1], newArgs[2], newArgs[3], offsetArr, pctArr, m);
+                    ArrayList<HashMap<String, String>> feEvents = ExperimentHelper.getFertDistribution(m, newArgs[0], newArgs[1], newArgs[2], newArgs[3], offsetArr, pctArr);
+                    ArrayList<HashMap<String, String>> events = MapUtil.getBucket(m, "management").getDataList();
+                    events.addAll(feEvents);
                     mapModified = true;
                 }
             }
@@ -98,22 +112,25 @@ public class Calculate extends Command {
                 log.error("Not enough arguments for {}", fun);
                 return;
             }
-            ExperimentHelper.getOMDistribution(newArgs[0], newArgs[1], newArgs[2], newArgs[3], newArgs[4], newArgs[5], m);
+            ArrayList<HashMap<String, String>> newEvents = ExperimentHelper.getOMDistribution(m, newArgs[0], newArgs[1], newArgs[2], newArgs[3], newArgs[4], newArgs[5]);
+            ArrayList<HashMap<String, String>> events = MapUtil.getBucket(m, "management").getDataList();
+            events.clear();
+            events.addAll(newEvents);
             mapModified = true;
         } else if (fun.equals("ROOT_DIST()")) {
             if (newArgs.length < 3) {
                 log.error("Not enough arguments for {}", fun);
                 return;
             }
-            SoilHelper.getRootDistribution(var, newArgs[0], newArgs[1], newArgs[2], m);
-            mapModified = true;
+            calcResults = SoilHelper.getRootDistribution(m, var, newArgs[0], newArgs[1], newArgs[2]);
+//            mapModified = true;
         } else if (fun.equals("STABLEC()")) {
             if (newArgs.length < 3) {
                 log.error("Not enough arguments for {}", fun);
                 return;
             }
-            ExperimentHelper.getStableCDistribution(newArgs[0], newArgs[1], newArgs[2], m);
-            mapModified = true;
+            calcResults = ExperimentHelper.getStableCDistribution(m, newArgs[0], newArgs[1], newArgs[2]);
+//            mapModified = true;
         } else if (fun.equals("REMOVE_ALL_EVENTS()")) {
             if (! replace) {
                 log.error("Cannot remove all events from a FILL command");
