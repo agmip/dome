@@ -174,4 +174,83 @@ public class DomeFunctionsTest {
 
         assertEquals("DOME PCTAWC() broken", testMap, DomeFunctions.percentAvailWaterContent(coreMap, "45"));
     }
+
+    @Test
+    public void domeCalcTavTamp() {
+        coreMap = new HashMap<String, Object>();
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19890101");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "26.3");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "16.2");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19890102");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "25");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "15.1");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19890103");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "25.1");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "15.4");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19890201");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "27.9");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "17.4");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19890202");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "27.9");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "17.4");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19890203");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "28.1");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "13.8");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19890303");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "27.5");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "13");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19890304");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "31");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "16.9");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19890305");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "32.3");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "16.5");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19900101");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "20.4");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "5.2");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19900102");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "20.1");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "3.2");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19900103");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "25");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "8.1");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19900201");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "29.6");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "13.6");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19900202");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "29.2");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "17.7");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19900203");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "30.4");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "15.6");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19900204");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "28.3");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "16.2");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19900205");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "19.4");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "6.9");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19900301");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "26.2");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "8.8");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19900302");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "26.2");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "11.7");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19900303");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "21.5");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "10.8");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19901229");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "29.3");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "16.1");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19901230");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "30.1");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "17.4");
+        AcePathfinderUtil.insertValue(coreMap, "w_date", "19901231");
+        AcePathfinderUtil.insertValue(coreMap, "tmax", "25");
+        AcePathfinderUtil.insertValue(coreMap, "tmin", "16.9");
+
+        addToTestArray(testMap, "tav", "20.29");
+        addToTestArray(testMap, "tamp", "5.58");
+
+        assertEquals("DOME PCTAWC() broken", testMap, DomeFunctions.getTavAndAmp(coreMap));
+    }
 }
