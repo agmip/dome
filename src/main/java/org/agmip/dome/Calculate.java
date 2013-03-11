@@ -67,7 +67,7 @@ public class Calculate extends Command {
         //     }
         //     calcResults = ExperimentHelper.getAutoPlantingDate(newArgs[0], newArgs[1], newArgs[2], newArgs[3], m);
         //     //mapModified = true;
-        } else if (fun.equals("TAMPAV()")) {
+        } else if (fun.equals("TAVAMP()")) {
             if (newArgs.length != 0) {
                 log.warn("Too many arguments for {}", fun);
             }

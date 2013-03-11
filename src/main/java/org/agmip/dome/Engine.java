@@ -100,17 +100,25 @@ public class Engine {
             String[] args = a.split("[|]");
 
             if (cmd.equals("INFO")) {
-                log.info("Recevied an INFO command");
-            } else if (cmd.equals("FILL") || cmd.equals("REPLACE")) {
+                log.debug("Recevied an INFO command");
+            } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY")) {
                 boolean replace = true;
                 if (cmd.equals("FILL")) replace=false;
                 if (args[0].endsWith("()")) {
-                    Calculate.run(data, rule.get("variable"), args, replace); 
+                    Calculate.run(data, rule.get("variable"), args, replace);
                 } else {
-                    Assume.run(data, rule.get("variable"), args, replace);
+                    if (cmd.equals("REPLACE_FIELD_ONLY")) {
+                        log.debug("Found FIELD_ONLY replace");
+                    }
+                    if ( data.containsKey("seasonal_dome_applied")) {
+                        log.info("Replace not applied due to FIELD_ONLY restriction");
+                    } else {
+                        log.debug("Found data without seasonal_dome_applied set.");
+                        Assume.run(data, rule.get("variable"), args, replace);
+                    }
                 }
             } else {
-                log.info("Invalid command: [{}]", cmd);
+                log.error("Invalid command: [{}]", cmd);
             }
         }
     }
