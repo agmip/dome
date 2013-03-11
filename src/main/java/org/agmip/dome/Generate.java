@@ -67,41 +67,7 @@ public class Generate {
                 log.error("Not enough arguments for {}", fun);
                 return new HashMap<String, ArrayList<String>>();
             }
-            HashMap<String, ArrayList<String>> results = ExperimentHelper.getAutoPlantingDate(m, args[0], args[1], args[2], args[3]);
-            ArrayList<String> pdates = MapUtil.getObjectOr(results, "pdate", new ArrayList());
-            if (pdates.isEmpty()) {
-                ArrayList<HashMap<String, String>> events = MapUtil.getBucket(m, "management").getDataList();
-                int idx = 0;
-                HashMap template = null;
-                for (String pdate : pdates) {
-                    // Locate the planting event
-                    while(idx < events.size()) {
-                        String eventType = MapUtil.getValueOr(events.get(idx), "event", "");
-                        if (eventType.equals("planting")) {
-                            if (template == null) {
-                                template = new HashMap();
-                                template.putAll(events.get(idx));
-                            }
-                            break;
-                        }
-                        idx++;
-                    }
-                    // Set default template if all no planting event available in the array
-                    if (template == null) {
-                        template = new HashMap();
-                    }
-                    // Set calculated padte into array
-                    if (idx >= events.size()) {
-                        HashMap tmp = new HashMap();
-                        tmp.putAll(template);
-                        tmp.put("date", pdate);
-                        events.add(tmp);
-                    } else {
-                        events.get(idx).put("date", pdate);
-                    }
-                }
-            }
-            return m;
+            return ExperimentHelper.getAutoPlantingDate(m, args[0], args[1], args[2], args[3]);
         } else {
             log.error("DOME Function {} unsupported.", fun);
             return new HashMap<String, ArrayList<String>>();
