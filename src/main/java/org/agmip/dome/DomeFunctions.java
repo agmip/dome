@@ -17,7 +17,7 @@ import org.agmip.functions.WeatherHelper;
 
 
 public class DomeFunctions {
-    private static final Logger log = LoggerFactory.getLogger(Functions.class);
+    private static final Logger log = LoggerFactory.getLogger(DomeFunctions.class);
     private static final String MULTIPLY_DEFAULT_FACTOR="1";
     /**
      * Do not instatiate this
@@ -75,10 +75,12 @@ public class DomeFunctions {
             String finalValue;
             //HashMap<String, String> result = new HashMap<String, String>();
             if (isDateOffset) {
+                log.info("Calling dateOffset() with {}, {}", entry, offset);
                 result.add(Functions.dateOffset(entry, offset));
             } else {
+                log.info("Calling numericOffset() with {}, {}", entry, offset);
                 result.add(Functions.numericOffset(entry, offset));
-            }    
+            }
         }
         results.put(targetVariable, result);
         log.debug("Offset results: {}", results.toString());
@@ -178,9 +180,6 @@ public class DomeFunctions {
             }
 
             String icsw = sldul.subtract(slll).multiply(icswpd).add(slll).toString();
-            // String icsw = Double.toString((((sldul - slll) * icswpd) + slll));
-            // results.put("icbl", (String) MapUtil.getObjectOr(sl, "sllb", "0"));
-            // results.put("ich2o", icsw);
             outputICH2O.add(icsw);
             outputICBL.add(sllb.toString());
         }
@@ -209,7 +208,6 @@ public class DomeFunctions {
             arr.add(tamp);
             results.put("tamp", arr);
         }
-        
         return results;
     }
 
@@ -276,10 +274,11 @@ public class DomeFunctions {
                 }
 
                 ArrayList<HashMap<String, Object>> pointer = Command.traverseAndGetSiblings(m, sourceVariable);
-                log.debug("Current pointer [{}]: {}", sourceVariable, pointer);
+                //log.debug("Current pointer [{}]: {}", sourceVariable, pointer);
                 for (HashMap<String, Object> entry : pointer) {
                     if ((sourceIsEvent && (((String) entry.get("event"))).equals(sourceEventType)) || (! sourceIsEvent)){
                         String var =  AcePathfinderUtil.setEventDateVar(sourceVariable, sourceIsEvent);
+                        log.debug("Looking for var {} in {}", var, entry.toString());
                         results.add((String) entry.get(var));
                     }
                 }

@@ -31,7 +31,7 @@ public class Calculate extends Command {
 
 		log.info("Attempting to apply DOME function: {}", fun);
         // These functions use the proper modifcation protocols.
-        if (fun.equals("OFFSET_DATE()")) {
+        if (fun.equals("OFFSET_DATE()") || fun.equals("DATE_OFFSET()")) {
             if (newArgs.length < 2) {
                 log.error("Not enough arguments for {}", fun);
                 return;
