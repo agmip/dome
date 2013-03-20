@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import org.agmip.ace.AcePathfinder;
 
 import org.agmip.ace.util.AcePathfinderUtil;
 import org.agmip.util.JSONAdapter;
@@ -502,6 +503,39 @@ public class EngineTest {
         log.info("=== TAMPAV() TEST ===");
         log.info("Starting map: {}", testMap.toString());
         createRule("FILL", "TAMP,TAV", "TAMPAV()");
+        e.apply(testMap);
+        log.info("Modified Map: {}", testMap.toString());
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    public void CalcEtoTest() {
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        
+        AcePathfinderUtil.insertValue(testMap, "wst_lat", "26.65");
+        AcePathfinderUtil.insertValue(testMap, "wst_long", "-80.633");
+        AcePathfinderUtil.insertValue(testMap, "wst_elev", "3.00");
+        AcePathfinderUtil.insertValue(testMap, "wndht", "10.00");
+        AcePathfinderUtil.insertValue(testMap, "amth", "0.3", "weather");
+        AcePathfinderUtil.insertValue(testMap, "bmth", "0.4", "weather");
+        AcePathfinderUtil.insertValue(testMap, "psyvnt", "Forced", "weather");
+        AcePathfinderUtil.insertValue(testMap, "w_date", "19890823");
+        AcePathfinderUtil.insertValue(testMap, "srad", "13.6");
+        AcePathfinderUtil.insertValue(testMap, "tmax", "26.4");
+        AcePathfinderUtil.insertValue(testMap, "tmin", "12.8");
+        AcePathfinderUtil.insertValue(testMap, "sunh", "");
+        AcePathfinderUtil.insertValue(testMap, "tavd", "");
+        AcePathfinderUtil.insertValue(testMap, "wind", "180");
+        AcePathfinderUtil.insertValue(testMap, "rhmnd", "30", AcePathfinder.INSTANCE.getPath("w_date"));
+        AcePathfinderUtil.insertValue(testMap, "rhmxd", "50", AcePathfinder.INSTANCE.getPath("w_date"));
+        AcePathfinderUtil.insertValue(testMap, "vprsd", "1.6");
+        AcePathfinderUtil.insertValue(testMap, "tdew", "13.5");
+        AcePathfinderUtil.insertValue(testMap, "tdry", "25.3");
+        AcePathfinderUtil.insertValue(testMap, "twet", "22.2");
+
+        log.info("=== REFET() TEST ===");
+        log.info("Starting map: {}", testMap.toString());
+        createRule("FILL", "ETO", "REFET()");
         e.apply(testMap);
         log.info("Modified Map: {}", testMap.toString());
         log.info("=== END TEST ===");

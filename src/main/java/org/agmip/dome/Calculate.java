@@ -15,6 +15,7 @@ import org.agmip.common.Functions;
 // Temporary imports to integrate @MengZhang codebase from another project
 import org.agmip.functions.ExperimentHelper;
 import org.agmip.functions.SoilHelper;
+import org.agmip.functions.WeatherHelper;
 import org.agmip.util.MapUtil;
 
 
@@ -72,6 +73,11 @@ public class Calculate extends Command {
                 log.warn("Too many arguments for {}", fun);
             }
             calcResults = DomeFunctions.getTavAndAmp(m);
+        } else if (fun.equals("REFET()")) {
+            if (newArgs.length != 0) {
+                log.warn("Too many arguments for {}", fun);
+            }
+            calcResults = WeatherHelper.getEto(m);
         } else if (fun.equals("ICN_DIST()")) {
             if (newArgs.length < 1) {
                 log.error("Not enough arguments for {}", fun);
