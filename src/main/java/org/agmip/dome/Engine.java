@@ -141,6 +141,7 @@ public class Engine {
             ArrayList<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
             HashSet<String> keysToExtract = new HashSet<String>();
             ArrayList<HashMap<String, String>> gAcc = new ArrayList<HashMap<String, String>>();
+            ArrayList<ArrayList<HashMap<String, String>>> newEventArrs = new ArrayList<ArrayList<HashMap<String, String>>>();
             // Run the generators
             for (HashMap<String, String> generator: generators) {
                 // NPE defender
@@ -164,7 +165,11 @@ public class Engine {
                 }
                 String[] args = a.split("[|]");
 
-                gAcc = Generate.run(data, args, gAcc);
+                if (args[0].toUpperCase().equals("AUTO_REPLICATE_EVENTS()")) {
+                    newEventArrs = Generate.runEvent(data, args, newEventArrs);
+                } else {
+                    gAcc = Generate.run(data, args, gAcc);
+                }
             }
             // On the output of "each" generation, put the export blocks into results
             if (! keysToExtract.contains("weather")) {
@@ -174,11 +179,20 @@ public class Engine {
                 data.remove("soil");
             }
             Cloner cloner = new Cloner();
-            int i = 0;
-            for (HashMap<String, String> rules : gAcc) {
-                i++;
-                Generate.applyGeneratedRules(data, rules, ""+i);
-                results.add(cloner.deepClone(data));
+            if (newEventArrs.isEmpty()) {
+                int i = 0;
+                for (HashMap<String, String> rules : gAcc) {
+                    i++;
+                    Generate.applyGeneratedRules(data, rules, ""+i);
+                    results.add(cloner.deepClone(data));
+                }
+            } else {
+                int i = 0;
+                for (ArrayList<HashMap<String, String>> eventArr : newEventArrs) {
+                    i++;
+                    Generate.applyReplicatedEvents(data, eventArr, "" + i);
+                    results.add(cloner.deepClone(data));
+                }
             }
             return results;
             // return the results.
