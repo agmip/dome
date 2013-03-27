@@ -46,6 +46,41 @@ public class Generate {
         return results;
     }
 
+    public static ArrayList<ArrayList<HashMap<String, String>>> runEvent(HashMap m, String[] args, ArrayList<ArrayList<HashMap<String, String>>> modifiers) {
+        ArrayList<ArrayList<HashMap<String, String>>> results;
+        String fun = args[0].toUpperCase();
+        String[] newArgs = Arrays.copyOfRange(args, 1, args.length);
+
+        if (modifiers.isEmpty()) {
+            // Conceptually, there should be a base number (lowest value? of
+            // entries (eg. pdate has 3 entries). Typically, this would be the
+            // divisor for all other maps. (eg. fdate has 6 entries: 2 per pdate)
+            // If there is only ONE entry for the map (only pdate) then we do
+            // not need to run this
+//            if( genResults.size() > 1) {
+//                String lowestKey = "";
+//                Integer lowestCount = null;
+//                // Here is where we rebuild the map for the following stuff.
+//                for (Map.Entry<String, ArrayList<String>> entry: genResults.entrySet()) {
+//                    if (lowestCount == null) {
+//                        lowestCount = entry.getValue().size();
+//                    } else {
+//                        if (lowestCount < entry.getValue().size()) {
+//                            lowestCount
+//                        }
+//                    }
+//                }
+//            }
+            results = executeEvent(m, fun, newArgs);
+        } else {
+            // Safety to not lose what already exists.
+            log.error("Multiple generators are unsupported in this version.");
+            results = modifiers;
+        }
+
+        return results;
+    }
+
     protected static void applyGeneratedRules(HashMap m, HashMap<String, String> rules, String id) {
         // Just apply each entry as a REPLACE ASSUME
         // Clear out existing events, since they are invalid!
@@ -61,6 +96,13 @@ public class Generate {
         }
     }
 
+    protected static void applyReplicatedEvents(HashMap m, ArrayList<HashMap<String, String>> events, String id) {
+        applyGeneratedRules(m, new HashMap(), id);
+        ArrayList<HashMap<String, String>> oringEvents = MapUtil.getBucket(m, "management").getDataList();
+        oringEvents.clear();
+        oringEvents.addAll(events);
+    }
+
     private static HashMap<String, ArrayList<String>> execute(HashMap m, String fun, String[] args) {
         if (fun.equals("AUTO_PDATE()")) {
             if (args.length < 4) {
@@ -71,6 +113,18 @@ public class Generate {
         } else {
             log.error("DOME Function {} unsupported.", fun);
             return new HashMap<String, ArrayList<String>>();
+        }
+    }
+
+    private static ArrayList<ArrayList<HashMap<String, String>>> executeEvent(HashMap m, String fun, String[] args) {
+        if (fun.equals("AUTO_REPLICATE_EVENTS()")) {
+            if (args.length != 0) {
+                log.warn("Too many arguments for {}", fun);
+            }
+            return ExperimentHelper.getAutoEventDate(m);
+        } else {
+            log.error("DOME Function {} unsupported. 2", fun);
+            return new ArrayList<ArrayList<HashMap<String, String>>>();
         }
     }
 }
