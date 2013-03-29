@@ -48,9 +48,7 @@ public class Engine {
      * @param dome A full DOME
      */
     public Engine(HashMap<String, Object> dome) {
-        this.rules = DomeUtil.getRules(dome);
-        this.generators = DomeUtil.getGenerators(dome);
-        this.allowGenerators = false;
+        this(dome, false);
     }
 
     /**
