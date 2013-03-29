@@ -367,6 +367,43 @@ public class EngineTest {
     }
 
     @Test
+    public void GenerateMachakosFastTest2() {
+        log.info("=== GENERATE() TEST2 ===");
+        URL resource = this.getClass().getResource("/mach_fast.json");
+        String json = "";
+        try {
+            json = new Scanner(new File(resource.getPath()), "UTF-8").useDelimiter("\\A").next();
+        } catch (Exception ex) {
+            log.error("Unable to find mach_fast.json");
+            assertTrue(false);
+        }
+        createRule("REPLACE", "sc_year", "1981");
+        createRule("REPLACE", "exp_dur", "3");
+        createEngineRule(e, "REPLACE", "pdate", "AUTO_REPLICATE_EVENTS()", true);
+        e.enableGenerators();
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        try {
+            testMap = JSONAdapter.fromJSON(json);
+        } catch (Exception ex) {
+            log.error("Unable to convert JSON");
+            assertTrue(false);
+        }
+
+        ArrayList<HashMap<String, Object>> fp = MapUtil.flatPack(testMap);
+        log.debug("Flatpack count: {}", fp.size());
+        HashMap<String, Object> tm = fp.get(0);
+        e.apply(tm);
+        ArrayList<HashMap<String, Object>> newExperiments = e.runGenerators(tm);
+        assertEquals("Improper number of generated experiments", 3, newExperiments.size());
+        int i = 0;
+        for(HashMap<String, Object> exp : newExperiments) {
+            i++;
+            log.debug("Generated Exp {}: {}", i, exp.toString());
+        }
+        log.info("=== END TEST ===");
+    }
+
+    @Test
     @Ignore
     public void GenerateMachakosFullTest() {
         log.info("=== GENERATE() TEST ===");
@@ -428,7 +465,7 @@ public class EngineTest {
     }
 
     @Test
-    public void CalcTampTavTest() {
+    public void CalcTavAmpTest() {
         HashMap<String, Object> testMap = new HashMap<String, Object>();
         AcePathfinderUtil.insertValue(testMap, "w_date", "19890101");
         AcePathfinderUtil.insertValue(testMap, "tmax", "26.3");
@@ -500,9 +537,9 @@ public class EngineTest {
         AcePathfinderUtil.insertValue(testMap, "tmax", "25");
         AcePathfinderUtil.insertValue(testMap, "tmin", "16.9");
 
-        log.info("=== TAMPAV() TEST ===");
+        log.info("=== TAVAMP() TEST ===");
         log.info("Starting map: {}", testMap.toString());
-        createRule("FILL", "TAMP,TAV", "TAMPAV()");
+        createRule("FILL", "TAV,TAMP", "TAVAMP()");
         e.apply(testMap);
         log.info("Modified Map: {}", testMap.toString());
         log.info("=== END TEST ===");
