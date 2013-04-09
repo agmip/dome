@@ -90,7 +90,7 @@ public class Calculate extends Command {
                 return;
             } else {
                 int numOfApplications = Functions.numericStringToBigInteger(newArgs[0]).intValue();
-                if (newArgs.length != ((numOfApplications*2)+4)) {
+                if (newArgs.length < ((numOfApplications*2)+4)) {
                     log.error("Not enough arguments for {}", fun);
                     return;
                 } else {

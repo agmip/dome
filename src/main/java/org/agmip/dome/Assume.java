@@ -38,6 +38,7 @@ public class Assume extends Command {
 
     private static void fill(HashMap m, String var, String val, String path) {
         log.debug("Filling {} with {}", path, val);
+        val = formatVal(var, val);
         if (path.contains("@")) {
             boolean isEvent = false;
             String eventType = "";
@@ -53,7 +54,7 @@ public class Assume extends Command {
                     String liveEvent = MapUtil.getValueOr(item, "event", "");
                     if ( !isEvent || (isEvent && eventType.equals(liveEvent))) {
                         if (! varHasValue(item, var, isEvent)) {
-                            item.put(var, val);
+                            item.put(AcePathfinderUtil.setEventDateVar(var, isEvent), val);
                         }
                     }
                 }
@@ -77,6 +78,7 @@ public class Assume extends Command {
 
     private static void replace(HashMap m, String var, String val, String path) {
         log.debug("Replacing {} with path {}", var, path);
+        val = formatVal(var, val);
 
         if (path.contains("@")) {
             boolean isEvent = false;
@@ -111,5 +113,17 @@ public class Assume extends Command {
                 pointer.put(var, val);
             }
         }
+    }
+    
+    private static String formatVal(String var, String val) {
+        String ret = val;
+        if (AcePathfinderUtil.isDate(var)) {
+            ret = val.replaceAll("[-/:]", "");
+            if (!ret.matches("\\d{8,8}")) {
+                log.error("Found unsupported date format: {}", val);
+                ret = val;
+            }
+        }
+        return ret;
     }
 }
