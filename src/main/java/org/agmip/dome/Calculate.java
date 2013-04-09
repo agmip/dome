@@ -213,6 +213,9 @@ public class Calculate extends Command {
             } else {
                 // This is not nested only need the first value.
                 log.debug("targetPath is [{}]", targetPath);
+                if (values.isEmpty()) {
+                    continue;
+                }
                 if (targetPath.equals("")) {
                     if (replace || (!replace && !varHasValue(m, targetVariable, false))) {
                         m.put(targetVariable, values.get(0));
