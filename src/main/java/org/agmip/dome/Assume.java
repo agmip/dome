@@ -116,6 +116,9 @@ public class Assume extends Command {
     }
     
     private static String formatVal(String var, String val) {
+        if (val == null) {
+            return val;
+        }
         String ret = val;
         if (AcePathfinderUtil.isDate(var)) {
             ret = val.replaceAll("[-/:]", "");
