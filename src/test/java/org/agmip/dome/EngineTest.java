@@ -328,6 +328,54 @@ public class EngineTest {
     }
 
     @Test
+    public void FillAutoPdateTest() {
+        
+        log.info("=== FILL AUTO_PDATE() TEST ===");
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        URL resource = this.getClass().getResource("/mach_fast.json");
+        String json = "";
+        try {
+            json = new Scanner(new File(resource.getPath()), "UTF-8").useDelimiter("\\A").next();
+        } catch (Exception ex) {
+            log.error("Unable to find mach_fast.json");
+            assertTrue(false);
+        }
+        try {
+            testMap = JSONAdapter.fromJSON(json);
+        } catch (Exception ex) {
+            log.error("Unable to convert JSON");
+            assertTrue(false);
+        }
+        ArrayList<HashMap<String, Object>> fp = MapUtil.flatPack(testMap);
+        log.debug("Flatpack count: {}", fp.size());
+        createRule("FILL", "pdate", "AUTO_PDATE()|0501|0701|25|5");
+        HashMap<String, Object> tm;
+        ArrayList<HashMap<String, String>> events;
+        
+        // Case 1 PDATE is missing
+        tm = fp.get(0);
+//        AcePathfinderUtil.insertValue(testMap, "sc_year", "1981");
+       events = MapUtil.getBucket(tm, "management").getDataList();
+        for (int i = 0; i < events.size(); i++) {
+            if ("planting".equals(events.get(i).get("event"))) {
+                events.get(i).remove("date");
+            }
+        }
+        log.info("Starting events in the Map 1: {}", events.toString());
+        e.apply(tm);
+        log.info("Modified events in the Map 1: {}", events.toString());
+        
+        // Case 2 PDATE is valid
+        tm = fp.get(1);
+        events = MapUtil.getBucket(tm, "management").getDataList();
+        log.info("Starting events in the Map 2: {}", events.toString());
+        e.apply(tm);
+        log.info("Modified events in the Map 2: {}", events.toString());
+        
+        log.info("=== END TEST ===");
+    }
+
+    @Test
     @Ignore
     public void GenerateMachakosFastTest() {
         log.info("=== GENERATE() TEST ===");

@@ -145,6 +145,12 @@ public class Calculate extends Command {
                 DomeFunctions.removeAllEvents(m);
                 mapModified = true;
             }
+        } else if (fun.equals("AUTO_PDATE()")) {
+            if (newArgs.length < 4) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            }
+            calcResults = ExperimentHelper.getAutoFillPlantingDate(m, newArgs[0], newArgs[1], newArgs[2], newArgs[3]);
         } else {
             log.error("DOME Function {} unsupported", fun);
             return;
