@@ -1,31 +1,24 @@
 package org.agmip.dome;
 
+import com.rits.cloning.Cloner;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.agmip.dome.DomeUtil;
-import org.agmip.ace.util.AcePathfinderUtil;
-
-import com.rits.cloning.Cloner;
-
 /**
- * The Engine of the DOME, which reads in a DOME ruleset and applies
- * the rules to a dataset.
- * 
- * Terms
- * <ul>
- * <li><strong>Command</strong> which method (FILL/REPLACE) are we working in</li>
- * <li><strong>Function</strong> a function used to populate the command</li>
- * <li><strong>Static</strong> populate the command with a static reference
- *  (either a variable or a value)</li>
- * </ul>
+ * The Engine of the DOME, which reads in a DOME ruleset and applies the rules
+ * to a dataset.
+ *
+ * Terms <ul> <li><strong>Command</strong> which method (FILL/REPLACE) are we
+ * working in</li> <li><strong>Function</strong> a function used to populate the
+ * command</li> <li><strong>Static</strong> populate the command with a static
+ * reference (either a variable or a value)</li> </ul>
  *
  */
 public class Engine {
+
     private static final Logger log = LoggerFactory.getLogger(Engine.class);
     private ArrayList<HashMap<String, String>> rules;
     private ArrayList<HashMap<String, String>> generators;
@@ -33,6 +26,7 @@ public class Engine {
 
     /**
      * Construct a new engine with the ruleset passed in.
+     *
      * @param dome A full DOME
      * @param allowGenerators allow generators to be run
      */
@@ -43,8 +37,9 @@ public class Engine {
     }
 
     /**
-     * Construct a new engine with the ruleset passed in. Generators are 
+     * Construct a new engine with the ruleset passed in. Generators are
      * <strong>not</strong> allowed by default.
+     *
      * @param dome A full DOME
      */
     public Engine(HashMap<String, Object> dome) {
@@ -53,6 +48,7 @@ public class Engine {
 
     /**
      * Construct a new engine with the ruleset passed in.
+     *
      * @param rules A DOME ruleset.
      */
     public Engine(ArrayList<HashMap<String, String>> rules) {
@@ -62,14 +58,14 @@ public class Engine {
     }
 
     protected Engine() {
-        this.rules = new ArrayList<HashMap<String,String>>();
+        this.rules = new ArrayList<HashMap<String, String>>();
         this.generators = new ArrayList<HashMap<String, String>>();
         this.allowGenerators = false;
     }
 
-
     /**
      * Add more rules to the Engine
+     *
      * @param rules new set of rules to append (from another DOME)
      */
     public void appendRules(ArrayList<HashMap<String, String>> rules) {
@@ -82,7 +78,7 @@ public class Engine {
      * @param data A dataset to modify according to the DOME ruleset.
      */
     public void apply(HashMap<String, Object> data) {
-        for (HashMap<String, String> rule: rules) {
+        for (HashMap<String, String> rule : rules) {
             String cmd = rule.get("cmd").toUpperCase();
 
             // NPE defender
@@ -101,13 +97,15 @@ public class Engine {
                 log.debug("Recevied an INFO command");
             } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY")) {
                 boolean replace = true;
-                if (cmd.equals("FILL")) replace=false;
+                if (cmd.equals("FILL")) {
+                    replace = false;
+                }
                 if (args[0].endsWith("()")) {
                     Calculate.run(data, rule.get("variable"), args, replace);
                 } else {
                     if (cmd.equals("REPLACE_FIELD_ONLY")) {
                         log.debug("Found FIELD_ONLY replace");
-                        if ( data.containsKey("seasonal_dome_applied")) {
+                        if (data.containsKey("seasonal_dome_applied")) {
                             log.info("Replace for {} not applied due to FIELD_ONLY restriction", rule.get("variable"));
                         } else {
                             log.debug("Found data without seasonal_dome_applied set.");
@@ -126,10 +124,10 @@ public class Engine {
     /**
      * Run the generators on the dataset passed in. This will generate a number
      * of additional datasets based on the original dataset.
-     * 
+     *
      * @param data A dataset to run the generators on
      * @param keysToExtract A list of keys to extract from the resulting
-     *                      generated datasets.
+     * generated datasets.
      *
      * @return A {@code HashMap} of just the exported keys.
      */
@@ -141,7 +139,7 @@ public class Engine {
             ArrayList<HashMap<String, String>> gAcc = new ArrayList<HashMap<String, String>>();
             ArrayList<ArrayList<HashMap<String, String>>> newEventArrs = new ArrayList<ArrayList<HashMap<String, String>>>();
             // Run the generators
-            for (HashMap<String, String> generator: generators) {
+            for (HashMap<String, String> generator : generators) {
                 // NPE defender
                 if (generator.get("variable") == null) {
                     log.error("Invalid generator: {}", generator.toString());
@@ -170,10 +168,10 @@ public class Engine {
                 }
             }
             // On the output of "each" generation, put the export blocks into results
-            if (! keysToExtract.contains("weather")) {
+            if (!keysToExtract.contains("weather")) {
                 data.remove("weather");
             }
-            if (! keysToExtract.contains("soil")) {
+            if (!keysToExtract.contains("soil")) {
                 data.remove("soil");
             }
             Cloner cloner = new Cloner();
@@ -181,7 +179,7 @@ public class Engine {
                 int i = 0;
                 for (HashMap<String, String> rules : gAcc) {
                     i++;
-                    Generate.applyGeneratedRules(data, rules, ""+i);
+                    Generate.applyGeneratedRules(data, rules, "" + i);
                     results.add(cloner.deepClone(data));
                 }
             } else {
@@ -201,7 +199,7 @@ public class Engine {
 
     }
 
-    protected void addRule(HashMap<String,String> rule) {
+    protected void addRule(HashMap<String, String> rule) {
         rules.add(rule);
     }
 
