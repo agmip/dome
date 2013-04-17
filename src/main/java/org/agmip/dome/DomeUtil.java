@@ -105,22 +105,22 @@ public class DomeUtil {
         }
     }
 
-    public static ArrayList<HashMap<String, String>> getGenerators(HashMap<String, Object> dome) {
+    public static ArrayList<ArrayList<HashMap<String, String>>> getGenerators(HashMap<String, Object> dome) {
         if(dome.containsKey("generators")) {
             try {
-                ArrayList<HashMap<String, String>> rules = (ArrayList<HashMap<String, String>>) dome.get("generators");
+                ArrayList<ArrayList<HashMap<String, String>>> rules = (ArrayList<ArrayList<HashMap<String, String>>>) dome.get("generators");
                 if (rules == null) {
-                    return new ArrayList<HashMap<String, String>>();
+                    return new ArrayList<ArrayList<HashMap<String, String>>>();
                 }
                 return rules;
             } catch (Exception ex) {
                 // Could not convert
                 log.error("getDomeGenerators() could not retreive the DOME generators from {}", dome.toString());
-                return new ArrayList<HashMap<String, String>>();
+                return new ArrayList<ArrayList<HashMap<String, String>>>();
             }
         } else {
             log.error("getDomeGenerators() could not retreive the DOME generators from {}", dome.toString());
-            return new ArrayList<HashMap<String, String>>();
+            return new ArrayList<ArrayList<HashMap<String, String>>>();
         }
     }
 
