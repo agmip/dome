@@ -151,6 +151,44 @@ public class Calculate extends Command {
                 return;
             }
             calcResults = ExperimentHelper.getAutoFillPlantingDate(m, newArgs[0], newArgs[1], newArgs[2], newArgs[3]);
+        } else if (fun.equals("PADDY()")) {
+            if (newArgs.length < 6) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            } else {
+                int numOfApplications = Functions.numericStringToBigInteger(newArgs[0]).intValue();
+                int reqNum = numOfApplications * 3 + 3;
+                if (newArgs.length < reqNum) {
+                    log.error("Not enough arguments for {}", fun);
+                    return;
+                } else {
+                    ArrayList<String> offset = new ArrayList<String>();
+                    ArrayList<String> maxVal = new ArrayList<String>();
+                    ArrayList<String> minVal = new ArrayList<String>();
+                    if (newArgs.length > reqNum) {
+                        log.warn("Too many arguments for {}, will only apply first {} group of bund information", fun, numOfApplications);
+                    }
+                    for (int i = 3; i < reqNum ; i++) {
+                        if (i % 3 == 0) {
+                            offset.add(newArgs[i]);
+                        } else if (i % 3 == 1) {
+                            maxVal.add(newArgs[i]);
+                        } else {
+                            minVal.add(newArgs[i]);
+                        }
+                    }
+                    log.debug("Calling with offset: {}, max: {} and min: {}", offset, maxVal, minVal);
+
+                    String [] offsetArr = offset.toArray(new String[offset.size()]);
+                    String [] maxArr = maxVal.toArray(new String[maxVal.size()]);
+                    String [] minArr = minVal.toArray(new String[minVal.size()]);
+                    
+                    ArrayList<HashMap<String, String>> irEvents = ExperimentHelper.getPaddyIrrigation(m, newArgs[0], newArgs[1], newArgs[2], offsetArr, maxArr, minArr);
+                    ArrayList<HashMap<String, String>> events = MapUtil.getBucket(m, "management").getDataList();
+                    events.addAll(irEvents);
+                    mapModified = true;
+                }
+            }
         } else {
             log.error("DOME Function {} unsupported", fun);
             return;

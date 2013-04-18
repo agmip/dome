@@ -730,6 +730,18 @@ public class EngineTest {
         log.info("Modified Map: {}", testMap.toString());
         log.info("=== END TEST ===");
     }
+
+    @Test
+    public void CalcPaddyTest() {
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
+        log.info("=== PADDY() TEST ===");
+        log.debug("Starting map: {}", testMap);
+        createRule("REPLACE", "idate", "PADDY()|3|2|150|-3|20|5|4|30|10|11|50|15");
+        e.apply(testMap);
+        log.debug("Modified map: {}", testMap.toString());
+        log.info("=== END TEST ===");
+    }
     
     @After
     public void tearDown() {
