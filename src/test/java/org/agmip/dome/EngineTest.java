@@ -456,11 +456,16 @@ public class EngineTest {
         HashMap<String, Object> tm = fp.get(0);
         e.apply(tm);
         ArrayList<HashMap<String, Object>> newExperiments = e.runGenerators(tm);
-        assertEquals("Improper number of generated experiments", 3, newExperiments.size());
+        assertEquals("Improper number of generated experiments", 1, newExperiments.size());
         int i = 0;
         for(HashMap<String, Object> exp : newExperiments) {
             i++;
-            log.debug("Generated Exp {}: {}", i, exp.toString());
+            ArrayList arr = MapUtil.getBucket(exp, "management").getDataList();
+            assertEquals("Improper number of generated events in experiments " + i, 9, arr.size());
+            for (int j = 0; j < arr.size(); j++) {
+                log.debug("Generated events {} in Exp {}: {}", j + 1, i, arr.get(j).toString());
+            }
+            
         }
         log.info("=== END TEST ===");
     }

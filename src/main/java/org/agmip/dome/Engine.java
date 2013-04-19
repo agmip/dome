@@ -4,6 +4,7 @@ import com.rits.cloning.Cloner;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import org.agmip.util.MapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,7 +137,7 @@ public class Engine {
 
     /**
      * Apply the groups of strategy rules to the dataset passed in.
-     * 
+     *
      * @param data The data set
      * @return The list of new generated data set
      */
@@ -148,7 +149,7 @@ public class Engine {
 
     /**
      * Apply the groups of strategy rules to the dataset passed in.
-     * 
+     *
      * @param dataArr The list of data set
      * @return The list of new generated data set
      */
@@ -283,16 +284,17 @@ public class Engine {
                     results.add(newData);
                 }
             } else {
-                int i = 0;
-                for (ArrayList<HashMap<String, String>> eventArr : newEventArrs) {
-                    i++;
-                    Generate.applyReplicatedEvents(data, eventArr, "" + i);
-                    HashMap newData = cloner.deepClone(data);
-                    if (refLeftFlg) {
-                        newData.putAll(tempRefHolder);
-                    }
-                    results.add(newData);
+                if (refLeftFlg) {
+                    data.putAll(tempRefHolder);
                 }
+                ArrayList<HashMap<String, String>> oringEvents = MapUtil.getBucket(data, "management").getDataList();
+
+                for (int i = 1; i < newEventArrs.size(); i++) {
+                    ArrayList<HashMap<String, String>> eventArr = newEventArrs.get(i);
+                    oringEvents.addAll(eventArr);
+//                    HashMap newData = cloner.deepClone(data);
+                }
+                results.add(data);
             }
             return results;
             // return the results.
@@ -336,11 +338,12 @@ public class Engine {
             return false;
         }
     }
-    
+
     /**
      * Get the list of loaded generator rules
-     * 
-     * @return The list of DOME command string with format (command,variable,arguments)
+     *
+     * @return The list of DOME command string with format
+     * (command,variable,arguments)
      */
     public ArrayList<String> getGenerators() {
         ArrayList<String> genList = new ArrayList<String>();
@@ -352,7 +355,7 @@ public class Engine {
                 }
             }
         }
-        
+
         return genList;
     }
 }
