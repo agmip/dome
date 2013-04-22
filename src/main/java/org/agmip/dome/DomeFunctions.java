@@ -75,10 +75,10 @@ public class DomeFunctions {
             String finalValue;
             //HashMap<String, String> result = new HashMap<String, String>();
             if (isDateOffset) {
-                log.info("Calling dateOffset() with {}, {}", entry, offset);
+                log.debug("Calling dateOffset() with {}, {}", entry, offset);
                 result.add(Functions.dateOffset(entry, offset));
             } else {
-                log.info("Calling numericOffset() with {}, {}", entry, offset);
+                log.debug("Calling numericOffset() with {}, {}", entry, offset);
                 result.add(Functions.numericOffset(entry, offset));
             }
         }
