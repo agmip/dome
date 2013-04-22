@@ -30,7 +30,7 @@ public class Calculate extends Command {
         boolean mapModified = false;
         boolean destructiveMode = false;
 
-		log.info("Attempting to apply DOME function: {}", fun);
+		log.debug("Attempting to apply DOME function: {}", fun);
         // These functions use the proper modifcation protocols.
         if (fun.equals("OFFSET_DATE()") || fun.equals("DATE_OFFSET()")) {
             if (newArgs.length < 2) {
@@ -56,6 +56,7 @@ public class Calculate extends Command {
         } else if (fun.equals("PCTAWC()")) {
             if (newArgs.length != 1) {
                 log.error("Invalid number of arguments for {}", fun);
+                return;
             } else {
                 destructiveMode = true;
                 calcResults = DomeFunctions.percentAvailWaterContent(m, newArgs[0]);
