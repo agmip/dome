@@ -44,6 +44,18 @@ public class EngineTest {
             eng.addRule(rule);
         }
     }
+    
+    private HashMap<String, String> createRule2(String method, String var, String args) {
+        HashMap<String, String> rule = new HashMap<String, String>();
+        rule.put("cmd", method);
+        if (var != null) {
+            rule.put("variable", var);
+        }
+        if (args != null) {
+            rule.put("args", args);
+        }
+        return rule;
+    }
 
 
 
@@ -329,6 +341,55 @@ public class EngineTest {
 
     @Test
     @Ignore
+    public void FillAutoPdateTest() {
+        
+        log.info("=== FILL AUTO_PDATE() TEST ===");
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        URL resource = this.getClass().getResource("/mach_fast.json");
+        String json = "";
+        try {
+            json = new Scanner(new File(resource.getPath()), "UTF-8").useDelimiter("\\A").next();
+        } catch (Exception ex) {
+            log.error("Unable to find mach_fast.json");
+            assertTrue(false);
+        }
+        try {
+            testMap = JSONAdapter.fromJSON(json);
+        } catch (Exception ex) {
+            log.error("Unable to convert JSON");
+            assertTrue(false);
+        }
+        ArrayList<HashMap<String, Object>> fp = MapUtil.flatPack(testMap);
+        log.debug("Flatpack count: {}", fp.size());
+        createRule("FILL", "pdate", "AUTO_PDATE()|0501|0701|25|5");
+        HashMap<String, Object> tm;
+        ArrayList<HashMap<String, String>> events;
+        
+        // Case 1 PDATE is missing
+        tm = fp.get(0);
+//        AcePathfinderUtil.insertValue(testMap, "sc_year", "1981");
+       events = MapUtil.getBucket(tm, "management").getDataList();
+        for (int i = 0; i < events.size(); i++) {
+            if ("planting".equals(events.get(i).get("event"))) {
+                events.get(i).remove("date");
+            }
+        }
+        log.info("Starting events in the Map 1: {}", events.toString());
+        e.apply(tm);
+        log.info("Modified events in the Map 1: {}", events.toString());
+        
+        // Case 2 PDATE is valid
+        tm = fp.get(1);
+        events = MapUtil.getBucket(tm, "management").getDataList();
+        log.info("Starting events in the Map 2: {}", events.toString());
+        e.apply(tm);
+        log.info("Modified events in the Map 2: {}", events.toString());
+        
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    @Ignore
     public void GenerateMachakosFastTest() {
         log.info("=== GENERATE() TEST ===");
         URL resource = this.getClass().getResource("/mach_fast.json");
@@ -395,8 +456,71 @@ public class EngineTest {
         HashMap<String, Object> tm = fp.get(0);
         e.apply(tm);
         ArrayList<HashMap<String, Object>> newExperiments = e.runGenerators(tm);
-        assertEquals("Improper number of generated experiments", 3, newExperiments.size());
+        assertEquals("Improper number of generated experiments", 1, newExperiments.size());
         int i = 0;
+        for(HashMap<String, Object> exp : newExperiments) {
+            i++;
+            ArrayList arr = MapUtil.getBucket(exp, "management").getDataList();
+            assertEquals("Improper number of generated events in experiments " + i, 9, arr.size());
+            for (int j = 0; j < arr.size(); j++) {
+                log.debug("Generated events {} in Exp {}: {}", j + 1, i, arr.get(j).toString());
+            }
+            
+        }
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    @Ignore
+    public void GenerateMachakosFastTest3() {
+        log.info("=== GENERATE() TEST3 ===");
+        URL resource = this.getClass().getResource("/mach_fast.json");
+        String json = "";
+        try {
+            json = new Scanner(new File(resource.getPath()), "UTF-8").useDelimiter("\\A").next();
+        } catch (Exception ex) {
+            log.error("Unable to find mach_fast.json");
+            assertTrue(false);
+        }
+        ArrayList<HashMap<String, String>> rules;
+        
+        rules= new ArrayList<HashMap<String, String>>();
+        rules.add(createRule2("REPLACE", "sc_year", "1981"));
+        rules.add(createRule2("REPLACE", "exp_dur", "5"));
+        rules.add(createRule2("REPLACE", "pdate", "REMOVE_ALL_EVENTS()"));
+        e.addGenGroup(rules, createRule2("REPLACE", "pdate", "AUTO_PDATE()|0501|0701|25|5"));
+        
+        rules = new ArrayList<HashMap<String, String>>();
+        rules.add(createRule2("REPLACE", "sc_year", "1991"));
+//        rules.add(createRule2("REPLACE", "exp_dur", "6"));
+        e.addGenGroup(rules, createRule2("REPLACE", "pdate", "AUTO_PDATE()|0501|0701|25|5"));
+        
+        rules = new ArrayList<HashMap<String, String>>();
+        rules.add(createRule2("REPLACE", "sadat", "OFFSET_DATE()|$PDATE|-30"));
+        e.addGenGroup(rules, new HashMap());
+        
+        e.enableGenerators();
+        log.debug("Added generators: {}", e.getGenerators());
+        
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        try {
+            testMap = JSONAdapter.fromJSON(json);
+        } catch (Exception ex) {
+            log.error("Unable to convert JSON");
+            assertTrue(false);
+        }
+
+        ArrayList<HashMap<String, Object>> fp = MapUtil.flatPack(testMap);
+        log.debug("Flatpack count: {}", fp.size());
+        HashMap<String, Object> tm = fp.get(0);
+        ArrayList<HashMap<String, Object>> newExperiments = e.applyStg(tm);
+        assertEquals("Improper number of generated experiments", 25, newExperiments.size());
+        int i = 0;
+        for(HashMap<String, Object> exp : newExperiments) {
+            i++;
+            log.debug("Generated Events in Exp {}: {}, SADAT:{}", i, MapUtil.getBucket(exp, "management").getDataList().toString(), exp.get("sadat"));
+        }
+        i = 0;
         for(HashMap<String, Object> exp : newExperiments) {
             i++;
             log.debug("Generated Exp {}: {}", i, exp.toString());
@@ -609,6 +733,18 @@ public class EngineTest {
         createRule("FILL", "icn_tot,ichn4,icno3", "ICN_DIST()|25");
         e.apply(testMap);
         log.info("Modified Map: {}", testMap.toString());
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    public void CalcPaddyTest() {
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
+        log.info("=== PADDY() TEST ===");
+        log.debug("Starting map: {}", testMap);
+        createRule("REPLACE", "idate", "PADDY()|3|2|150|-3|20|5|4|30|10|11|50|15");
+        e.apply(testMap);
+        log.debug("Modified map: {}", testMap.toString());
         log.info("=== END TEST ===");
     }
     
