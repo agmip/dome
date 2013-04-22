@@ -40,7 +40,11 @@ public class Engine {
     public Engine(HashMap<String, Object> dome, boolean allowGenerators) {
         this.rules = DomeUtil.getRules(dome);
         this.generators = new ArrayList<HashMap<String, String>>();
-        this.genGroups = DomeUtil.getGenerators(dome);
+        if (allowGenerators) {
+            this.genGroups = DomeUtil.getGenerators(dome);
+        } else {
+            this.genGroups = new ArrayList<ArrayList<HashMap<String, String>>>();
+        }
         this.allowGenerators = allowGenerators;
     }
 
