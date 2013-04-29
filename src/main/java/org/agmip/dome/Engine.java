@@ -288,17 +288,16 @@ public class Engine {
                     results.add(newData);
                 }
             } else {
-                if (refLeftFlg) {
-                    data.putAll(tempRefHolder);
+                int i = 0;
+                for (ArrayList<HashMap<String, String>> eventArr : newEventArrs) {
+                    i++;
+                    Generate.applyReplicatedEvents(data, eventArr, "" + i);
+                    HashMap newData = cloner.deepClone(data);
+                    if (refLeftFlg) {
+                        newData.putAll(tempRefHolder);
+                    }
+                    results.add(newData);
                 }
-                ArrayList<HashMap<String, String>> oringEvents = MapUtil.getBucket(data, "management").getDataList();
-
-                for (int i = 1; i < newEventArrs.size(); i++) {
-                    ArrayList<HashMap<String, String>> eventArr = newEventArrs.get(i);
-                    oringEvents.addAll(eventArr);
-//                    HashMap newData = cloner.deepClone(data);
-                }
-                results.add(data);
             }
             return results;
             // return the results.
