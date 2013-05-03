@@ -15,6 +15,8 @@ import org.agmip.common.Functions;
 // Temporary imports to integrate @MengZhang codebase from another project
 import org.agmip.functions.ExperimentHelper;
 import org.agmip.functions.SoilHelper;
+import org.agmip.functions.WeatherHelper;
+import org.agmip.util.MapUtil;
 
 
 public class Calculate extends Command {
@@ -28,9 +30,9 @@ public class Calculate extends Command {
         boolean mapModified = false;
         boolean destructiveMode = false;
 
-		log.info("Attempting to apply DOME function: {}", fun);
+		log.debug("Attempting to apply DOME function: {}", fun);
         // These functions use the proper modifcation protocols.
-        if (fun.equals("OFFSET_DATE()")) {
+        if (fun.equals("OFFSET_DATE()") || fun.equals("DATE_OFFSET()")) {
             if (newArgs.length < 2) {
                 log.error("Not enough arguments for {}", fun);
                 return;
@@ -54,6 +56,7 @@ public class Calculate extends Command {
         } else if (fun.equals("PCTAWC()")) {
             if (newArgs.length != 1) {
                 log.error("Invalid number of arguments for {}", fun);
+                return;
             } else {
                 destructiveMode = true;
                 calcResults = DomeFunctions.percentAvailWaterContent(m, newArgs[0]);
@@ -66,13 +69,29 @@ public class Calculate extends Command {
         //     }
         //     calcResults = ExperimentHelper.getAutoPlantingDate(newArgs[0], newArgs[1], newArgs[2], newArgs[3], m);
         //     //mapModified = true;
+        } else if (fun.equals("TAVAMP()")) {
+            if (newArgs.length != 0) {
+                log.warn("Too many arguments for {}", fun);
+            }
+            calcResults = DomeFunctions.getTavAndAmp(m);
+        } else if (fun.equals("REFET()")) {
+            if (newArgs.length != 0) {
+                log.warn("Too many arguments for {}", fun);
+            }
+            calcResults = WeatherHelper.getEto(m);
+        } else if (fun.equals("ICN_DIST()")) {
+            if (newArgs.length < 1) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            }
+            calcResults = SoilHelper.getIcnDistribution(m, newArgs[0]);
         } else if (fun.equals("FERT_DIST()")) {
             if (newArgs.length < 6) {
                 log.error("Not enough arguments for {}", fun);
                 return;
             } else {
                 int numOfApplications = Functions.numericStringToBigInteger(newArgs[0]).intValue();
-                if (newArgs.length != ((numOfApplications*2)+4)) {
+                if (newArgs.length < ((numOfApplications*2)+4)) {
                     log.error("Not enough arguments for {}", fun);
                     return;
                 } else {
@@ -86,10 +105,12 @@ public class Calculate extends Command {
                         }
                     }
                     log.debug("Calling with offset: {} and pct: {}", offset, pct);
-                    
+
                     String [] offsetArr = offset.toArray(new String[offset.size()]);
                     String [] pctArr = pct.toArray(new String[pct.size()]);
-                    ExperimentHelper.getFertDistribution(newArgs[0], newArgs[1], newArgs[2], newArgs[3], offsetArr, pctArr, m);
+                    ArrayList<HashMap<String, String>> feEvents = ExperimentHelper.getFertDistribution(m, newArgs[0], newArgs[1], newArgs[2], newArgs[3], offsetArr, pctArr);
+                    ArrayList<HashMap<String, String>> events = MapUtil.getBucket(m, "management").getDataList();
+                    events.addAll(feEvents);
                     mapModified = true;
                 }
             }
@@ -98,22 +119,25 @@ public class Calculate extends Command {
                 log.error("Not enough arguments for {}", fun);
                 return;
             }
-            ExperimentHelper.getOMDistribution(newArgs[0], newArgs[1], newArgs[2], newArgs[3], newArgs[4], newArgs[5], m);
+            ArrayList<HashMap<String, String>> newEvents = ExperimentHelper.getOMDistribution(m, newArgs[0], newArgs[1], newArgs[2], newArgs[3], newArgs[4], newArgs[5]);
+            ArrayList<HashMap<String, String>> events = MapUtil.getBucket(m, "management").getDataList();
+            events.clear();
+            events.addAll(newEvents);
             mapModified = true;
         } else if (fun.equals("ROOT_DIST()")) {
             if (newArgs.length < 3) {
                 log.error("Not enough arguments for {}", fun);
                 return;
             }
-            SoilHelper.getRootDistribution(newArgs[0], newArgs[1], newArgs[2], m);
-            mapModified = true;
+            calcResults = SoilHelper.getRootDistribution(m, var, newArgs[0], newArgs[1], newArgs[2]);
+//            mapModified = true;
         } else if (fun.equals("STABLEC()")) {
             if (newArgs.length < 3) {
                 log.error("Not enough arguments for {}", fun);
                 return;
             }
-            ExperimentHelper.getStableCDistribution(newArgs[0], newArgs[1], newArgs[2], m);
-            mapModified = true;
+            calcResults = ExperimentHelper.getStableCDistribution(m, newArgs[0], newArgs[1], newArgs[2]);
+//            mapModified = true;
         } else if (fun.equals("REMOVE_ALL_EVENTS()")) {
             if (! replace) {
                 log.error("Cannot remove all events from a FILL command");
@@ -121,6 +145,50 @@ public class Calculate extends Command {
             } else {
                 DomeFunctions.removeAllEvents(m);
                 mapModified = true;
+            }
+        } else if (fun.equals("AUTO_PDATE()")) {
+            if (newArgs.length < 4) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            }
+            calcResults = ExperimentHelper.getAutoFillPlantingDate(m, newArgs[0], newArgs[1], newArgs[2], newArgs[3]);
+        } else if (fun.equals("PADDY()")) {
+            if (newArgs.length < 6) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            } else {
+                int numOfApplications = Functions.numericStringToBigInteger(newArgs[0]).intValue();
+                int reqNum = numOfApplications * 3 + 3;
+                if (newArgs.length < reqNum) {
+                    log.error("Not enough arguments for {}", fun);
+                    return;
+                } else {
+                    ArrayList<String> offset = new ArrayList<String>();
+                    ArrayList<String> maxVal = new ArrayList<String>();
+                    ArrayList<String> minVal = new ArrayList<String>();
+                    if (newArgs.length > reqNum) {
+                        log.warn("Too many arguments for {}, will only apply first {} group of bund information", fun, numOfApplications);
+                    }
+                    for (int i = 3; i < reqNum ; i++) {
+                        if (i % 3 == 0) {
+                            offset.add(newArgs[i]);
+                        } else if (i % 3 == 1) {
+                            maxVal.add(newArgs[i]);
+                        } else {
+                            minVal.add(newArgs[i]);
+                        }
+                    }
+                    log.debug("Calling with offset: {}, max: {} and min: {}", offset, maxVal, minVal);
+
+                    String [] offsetArr = offset.toArray(new String[offset.size()]);
+                    String [] maxArr = maxVal.toArray(new String[maxVal.size()]);
+                    String [] minArr = minVal.toArray(new String[minVal.size()]);
+                    
+                    ArrayList<HashMap<String, String>> irEvents = ExperimentHelper.getPaddyIrrigation(m, newArgs[0], newArgs[1], newArgs[2], offsetArr, maxArr, minArr);
+                    ArrayList<HashMap<String, String>> events = MapUtil.getBucket(m, "management").getDataList();
+                    events.addAll(irEvents);
+                    mapModified = true;
+                }
             }
         } else {
             log.error("DOME Function {} unsupported", fun);
@@ -190,6 +258,9 @@ public class Calculate extends Command {
             } else {
                 // This is not nested only need the first value.
                 log.debug("targetPath is [{}]", targetPath);
+                if (values.isEmpty()) {
+                    continue;
+                }
                 if (targetPath.equals("")) {
                     if (replace || (!replace && !varHasValue(m, targetVariable, false))) {
                         m.put(targetVariable, values.get(0));

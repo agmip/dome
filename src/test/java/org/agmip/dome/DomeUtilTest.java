@@ -14,7 +14,7 @@ public class DomeUtilTest {
     @Before
     public void setup() {
         HashMap<String, String> info = new HashMap<String, String>();
-        info.put("region", "SAMPLE");
+        info.put("reg_id", "SAMPLE");
         info.put("stratum", "99");
         info.put("man_id", "81");
         dome.put("info", info);
@@ -32,7 +32,7 @@ public class DomeUtilTest {
     @Test
     public void testGetDomeInfo() {
         HashMap<String, String> test = new HashMap<String, String>();
-        test.put("region", "SAMPLE");
+        test.put("reg_id", "SAMPLE");
         test.put("stratum", "99");
         test.put("man_id", "81");
 

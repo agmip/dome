@@ -3,7 +3,7 @@
 
     <groupId>org.agmip</groupId>
     <artifactId>dome</artifactId>
-    <version>1.1.2</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -31,8 +31,8 @@
         <url>https://github.com/agmip/dome</url>
         <connection>scm:git:git://github.com/agmip/dome.git</connection>
         <developerConnection>scm:git:git@github.com:agmip/dome.git</developerConnection>
-      <tag>dome-1.1.2</tag>
-  </scm>
+        <tag>dome-1.2</tag>
+    </scm>
 
     <developers>
         <developer>
@@ -52,17 +52,17 @@
         <dependency>
             <groupId>org.agmip</groupId>
             <artifactId>ace-lookup</artifactId>
-            <version>1.0.1</version>
+            <version>1.1</version>
         </dependency>
-		<dependency>
-			<groupId>org.agmip</groupId>
-			<artifactId>agmip-common-functions</artifactId>
-			<version>1.1</version>
-		</dependency>
+        <dependency>
+            <groupId>org.agmip</groupId>
+            <artifactId>agmip-common-functions</artifactId>
+            <version>1.2</version>
+        </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.0.7</version>
+            <version>1.0.9</version>
         </dependency>
         <dependency>
             <groupId>uk.com.robust-it</groupId>

@@ -81,7 +81,8 @@ public abstract class Command {
             pointer = m;
         }
 
-        log.debug("TTP Pointer: {}", pointer);
+        // Generates MASSIVE logs, uncomment at your own risk!
+        //log.debug("TTP Pointer: {}", pointer);
         
         String[] temp = path.split("[@!]");
         if (! pointer.containsKey(temp[1])) {
