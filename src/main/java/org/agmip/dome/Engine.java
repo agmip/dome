@@ -4,6 +4,7 @@ import com.rits.cloning.Cloner;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import org.agmip.functions.ExperimentHelper;
 import org.agmip.util.MapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,10 +146,36 @@ public class Engine {
      * @param data The data set
      * @return The list of new generated data set
      */
-    public ArrayList<HashMap<String, Object>> applyStg(HashMap<String, Object> data) {
-        ArrayList<HashMap<String, Object>> dataArr = new ArrayList<HashMap<String, Object>>();
-        dataArr.add(data);
-        return applyStg(dataArr);
+    public ArrayList<HashMap<String, Object>> applyStg(HashMap<String, Object> data) {        
+        // Check if there is generator command group left
+        if (hasMoreGenRules()) {
+            // Apply rules to input data
+            ArrayList<HashMap<String, Object>> arr = new ArrayList();
+            if (genRules != null && !genRules.isEmpty()) {
+                for (int i = 0; i < genRules.size() - 1; i++) {
+                    HashMap<String, String> rule = genRules.get(i);
+                    applyRule(data, rule);
+                }
+                // Get generator rules
+                HashMap<String, String> gemRule = genRules.get(genRules.size() - 1);
+                if (!gemRule.isEmpty()) {
+                    generators.add(gemRule);
+                    arr = runGenerators(data, cur != genGroups.size() - 1);
+                    generators.clear();
+                }
+            }
+
+            // Try yo apply next group of genertators
+            if (arr.isEmpty()) {
+                return applyStg(data);
+            } else {
+                return applyStg(arr);
+            }
+        } else {
+            ArrayList<HashMap<String, Object>> results = new ArrayList();
+            results.add(data);
+            return results;
+        }
     }
 
     /**
@@ -163,25 +190,23 @@ public class Engine {
 
         // Check if there is generator command group left
         if (hasMoreGenRules()) {
-            // Apply rules to each entry of data
-            for (HashMap<String, Object> data : dataArr) {
-                ArrayList<HashMap<String, Object>> arr = new ArrayList();
-                if (genRules != null && !genRules.isEmpty()) {
+            if (genRules != null && !genRules.isEmpty()) {
+                // Apply non-generator rules to each entry of data
+                for (HashMap<String, Object> data : dataArr) {
+                    ArrayList<HashMap<String, Object>> arr = new ArrayList();
                     for (int i = 0; i < genRules.size() - 1; i++) {
                         HashMap<String, String> rule = genRules.get(i);
                         applyRule(data, rule);
                     }
-                    HashMap<String, String> gemRule = genRules.get(genRules.size() - 1);
-                    if (!gemRule.isEmpty()) {
-                        generators.add(gemRule);
-                        arr = runGenerators(data, cur != genGroups.size() - 1);
-                        generators.clear();
-                    }
                 }
-                if (arr.isEmpty()) {
-                    results.add(data);
+                // Apply generator rules to whole data set
+                HashMap<String, String> gemRule= genRules.get(genRules.size() - 1);
+                if (!gemRule.isEmpty()) {
+                    generators.add(gemRule);
+                    results = runGenerators(dataArr, cur != genGroups.size() - 1);
+                    generators.clear();
                 } else {
-                    results.addAll(arr);
+                    results = dataArr;
                 }
             }
 
@@ -298,6 +323,110 @@ public class Engine {
                     }
                     results.add(newData);
                 }
+            }
+            return results;
+            // return the results.
+        } else {
+            log.error("You cannot run generators in this mode.");
+            return new ArrayList<HashMap<String, Object>>();
+        }
+
+    }
+
+    /**
+     * Run the generators on the dataset passed in. This will generate a number
+     * of additional datasets based on the original dataset.
+     *
+     * @param dataArr A list of dataset to run the generators on
+     * @param refLeftFlg A flag for if the references of all extractable data
+     * (weather/soil) are left in the result. True for left, False for not left.
+     *
+     * @return A {@code HashMap} of just the exported keys.
+     */
+    public ArrayList<HashMap<String, Object>> runGenerators(ArrayList<HashMap<String, Object>> dataArr, boolean refLeftFlg) {
+        if (this.allowGenerators) {
+            log.debug("Starting generators");
+            ArrayList<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
+            HashSet<String> keysToExtract = new HashSet<String>();
+            ArrayList<HashMap<String, String>> gAcc = new ArrayList<HashMap<String, String>>();
+            ArrayList<ArrayList<HashMap<String, String>>> newEventArrs = new ArrayList<ArrayList<HashMap<String, String>>>();
+            // Run the generators
+            for (HashMap<String, String> generator : generators) {
+                // NPE defender
+                if (generator.get("variable") == null) {
+                    log.error("Invalid generator: {}", generator.toString());
+                    return new ArrayList<HashMap<String, Object>>();
+                }
+
+                String path = Command.getPathOrRoot(generator.get("variable"));
+                if (path.contains("weather")) {
+                    keysToExtract.add("weather");
+                } else if (path.contains("soil")) {
+                    keysToExtract.add("soil");
+                } else {
+                    keysToExtract.add("experiment");
+                }
+
+                String a = generator.get("args");
+                if (a == null) {
+                    a = "";
+                }
+                String[] args = a.split("[|]");
+
+                if (args[0].toUpperCase().equals("AUTO_REPLICATE_EVENTS()")) {
+                    String[] pdates = new String[dataArr.size()];
+                    for (int i = 0; i < dataArr.size(); i++) {
+                        pdates[i] = "";
+                        HashMap<String, Object> data = dataArr.get(i);
+                        ArrayList<HashMap<String, String>> events = MapUtil.getBucket(data, "management").getDataList();
+                        for (HashMap<String, String> event : events) {
+                            if ("planting".equals(MapUtil.getValueOr(event, "event", ""))) {
+                                pdates[i] = MapUtil.getValueOr(event, "date", "");
+                                break;
+                            }
+                        }
+                    }
+                    HashMap<String, Object> data;
+                    if (dataArr.isEmpty()) {
+                        data = new HashMap();
+                    } else {
+                        data = dataArr.get(0);
+                    }
+                    newEventArrs = ExperimentHelper.getAutoEventDate(data, pdates);
+                } else {
+                    HashMap<String, Object> data;
+                    if (dataArr.isEmpty()) {
+                        data = new HashMap();
+                    } else {
+                        data = dataArr.get(0);
+                    }
+                    gAcc = Generate.run(data, args, gAcc);
+                }
+            }
+            // On the output of "each" generation, put the export blocks into results
+            if (refLeftFlg) {
+                this.keysToExtractFinal.addAll(keysToExtract);
+            }
+            if (newEventArrs.isEmpty()) {
+                if (gAcc.size() != dataArr.size()) {
+                    log.error("The number of calculated values is not match with the number of generated experiments");
+                    return results;
+                }
+                
+                for (int i = 0; i < gAcc.size(); i++) {
+                    Generate.applyGeneratedRules(dataArr.get(i), gAcc.get(i), null);
+                }
+                results = dataArr;
+            } else {
+                if (newEventArrs.size() != dataArr.size()) {
+                    log.error("The number of calculated events is not match with the number of generated experiments");
+                    return results;
+                }
+                
+                for (int i = 0; i < newEventArrs.size(); i++) {
+                    Generate.applyReplicatedEvents(dataArr.get(i), newEventArrs.get(i), null);
+                }
+                results = dataArr;
             }
             return results;
             // return the results.

@@ -8,14 +8,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.agmip.ace.AcePathfinder;
-import org.agmip.ace.util.AcePathfinderUtil;
 import org.agmip.util.MapUtil;
-import org.agmip.common.Functions;
 
 // Temporary imports to integrate @MengZhang codebase from another project
 import org.agmip.functions.ExperimentHelper;
-import org.agmip.functions.SoilHelper;
 
 
 public class Generate {
@@ -88,8 +84,10 @@ public class Generate {
         if (exname.contains("__")) {
             exname = exname.substring(0,exname.indexOf("__"));
         }
-        String[] exvalue = {exname+"__"+id};
-        Assume.run(m, "exname", exvalue, true);
+        if (id != null) {
+            String[] exvalue = {exname+"__"+id};
+            Assume.run(m, "exname", exvalue, true);
+        }
         for (Map.Entry<String, String> rule : rules.entrySet()) {
             String[] value = {rule.getValue()};
             Assume.run(m, rule.getKey(), value, true);
@@ -109,6 +107,7 @@ public class Generate {
                 log.error("Not enough arguments for {}", fun);
                 return new HashMap<String, ArrayList<String>>();
             }
+            m.put("origin_pdate", ExperimentHelper.getFstPdate(m, ""));
             return ExperimentHelper.getAutoPlantingDate(m, args[0], args[1], args[2], args[3]);
         } else {
             log.error("DOME Function {} unsupported.", fun);

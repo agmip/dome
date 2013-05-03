@@ -456,12 +456,12 @@ public class EngineTest {
         HashMap<String, Object> tm = fp.get(0);
         e.apply(tm);
         ArrayList<HashMap<String, Object>> newExperiments = e.runGenerators(tm);
-        assertEquals("Improper number of generated experiments", 1, newExperiments.size());
+        assertEquals("Improper number of generated experiments", 3, newExperiments.size());
         int i = 0;
         for(HashMap<String, Object> exp : newExperiments) {
             i++;
             ArrayList arr = MapUtil.getBucket(exp, "management").getDataList();
-            assertEquals("Improper number of generated events in experiments " + i, 9, arr.size());
+            assertEquals("Improper number of generated events in experiments " + i, 3, arr.size());
             for (int j = 0; j < arr.size(); j++) {
                 log.debug("Generated events {} in Exp {}: {}", j + 1, i, arr.get(j).toString());
             }
@@ -487,12 +487,66 @@ public class EngineTest {
         rules= new ArrayList<HashMap<String, String>>();
         rules.add(createRule2("REPLACE", "sc_year", "1981"));
         rules.add(createRule2("REPLACE", "exp_dur", "5"));
-        rules.add(createRule2("REPLACE", "pdate", "REMOVE_ALL_EVENTS()"));
+//        rules.add(createRule2("REPLACE", "pdate", "REMOVE_ALL_EVENTS()"));
         e.addGenGroup(rules, createRule2("REPLACE", "pdate", "AUTO_PDATE()|0501|0701|25|5"));
         
         rules = new ArrayList<HashMap<String, String>>();
+        e.addGenGroup(rules, createRule2("REPLACE", "pdate", "AUTO_REPLICATE_EVENTS()"));
+        
+        rules = new ArrayList<HashMap<String, String>>();
+        rules.add(createRule2("REPLACE", "sadat", "OFFSET_DATE()|$PDATE|-30"));
+        e.addGenGroup(rules, new HashMap());
+        
+        e.enableGenerators();
+        log.debug("Added generators: {}", e.getGenerators());
+        
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        try {
+            testMap = JSONAdapter.fromJSON(json);
+        } catch (Exception ex) {
+            log.error("Unable to convert JSON");
+            assertTrue(false);
+        }
+
+        ArrayList<HashMap<String, Object>> fp = MapUtil.flatPack(testMap);
+        log.debug("Flatpack count: {}", fp.size());
+        HashMap<String, Object> tm = fp.get(0);
+        ArrayList<HashMap<String, Object>> newExperiments = e.applyStg(tm);
+        assertEquals("Improper number of generated experiments", 5, newExperiments.size());
+        int i = 0;
+        for(HashMap<String, Object> exp : newExperiments) {
+            i++;
+            log.debug("Generated Events in Exp {}: {}, SADAT:{}", i, MapUtil.getBucket(exp, "management").getDataList().toString(), exp.get("sadat"));
+        }
+        i = 0;
+        for(HashMap<String, Object> exp : newExperiments) {
+            i++;
+            log.debug("Generated Exp {}: {}", i, exp.toString());
+        }
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    @Ignore
+    public void GenerateMachakosFastTest4() {
+        log.info("=== GENERATE() TEST4 ===");
+        URL resource = this.getClass().getResource("/mach_fast.json");
+        String json = "";
+        try {
+            json = new Scanner(new File(resource.getPath()), "UTF-8").useDelimiter("\\A").next();
+        } catch (Exception ex) {
+            log.error("Unable to find mach_fast.json");
+            assertTrue(false);
+        }
+        ArrayList<HashMap<String, String>> rules;
+        
+        rules= new ArrayList<HashMap<String, String>>();
+        rules.add(createRule2("REPLACE", "exp_dur", "5"));
+        e.addGenGroup(rules, createRule2("REPLACE", "pdate", "AUTO_REPLICATE_EVENTS()"));
+        
+        rules = new ArrayList<HashMap<String, String>>();
         rules.add(createRule2("REPLACE", "sc_year", "1991"));
-//        rules.add(createRule2("REPLACE", "exp_dur", "6"));
+        rules.add(createRule2("REPLACE", "exp_dur", "5"));
         e.addGenGroup(rules, createRule2("REPLACE", "pdate", "AUTO_PDATE()|0501|0701|25|5"));
         
         rules = new ArrayList<HashMap<String, String>>();
@@ -514,7 +568,7 @@ public class EngineTest {
         log.debug("Flatpack count: {}", fp.size());
         HashMap<String, Object> tm = fp.get(0);
         ArrayList<HashMap<String, Object>> newExperiments = e.applyStg(tm);
-        assertEquals("Improper number of generated experiments", 25, newExperiments.size());
+        assertEquals("Improper number of generated experiments", 5, newExperiments.size());
         int i = 0;
         for(HashMap<String, Object> exp : newExperiments) {
             i++;
