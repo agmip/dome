@@ -4,3 +4,4 @@ mach*.json
 .settings/*
 .classpath
 .project
+.json
