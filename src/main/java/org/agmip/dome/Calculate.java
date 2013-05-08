@@ -8,7 +8,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.agmip.ace.AcePathfinder;
 import org.agmip.ace.util.AcePathfinderUtil;
 import org.agmip.common.Functions;
 
@@ -30,7 +29,7 @@ public class Calculate extends Command {
         boolean mapModified = false;
         boolean destructiveMode = false;
 
-		log.debug("Attempting to apply DOME function: {}", fun);
+	log.debug("Attempting to apply DOME function: {}", fun);
         // These functions use the proper modifcation protocols.
         if (fun.equals("OFFSET_DATE()") || fun.equals("DATE_OFFSET()")) {
             if (newArgs.length < 2) {
@@ -202,7 +201,33 @@ public class Calculate extends Command {
     // private static void fill(HashMap<String, Object> m, HashMap<String, ArrayList<String>> calcResults) {
     //     log.error("Not yet implemented.");
     // }
-    
+    public static void create(HashMap m, String var, String[] args) {
+        var = var.toLowerCase();
+        String fun = args[0].toUpperCase();
+        String[] newArgs =  Arrays.copyOfRange(args, 1, args.length);
+
+	log.debug("Attempting to apply DOME function: {}", fun);
+        if (fun.equals("NEW_EVENT()")) {
+            
+            if (newArgs.length < 1) {
+                log.error("Not enough arguments for {}", fun);
+            } else if (newArgs.length % 2 != 1) {
+                log.warn("There is unpaired variable for {}", fun);
+            }
+            HashMap<String, String> info  = new HashMap<String, String>();
+            for (int i = 2; i < newArgs.length; i += 2) {
+                info.put(newArgs[i -1].toLowerCase(), newArgs[i]);
+            }
+            HashMap<String, String> newEvent = ExperimentHelper.createEvent(m, var, newArgs[0], info);
+            if (!newEvent.isEmpty()) {
+                MapUtil.getBucket(m, "management").getDataList().add(newEvent);
+            } else {
+                log.warn("No event has been generated");
+            }
+        } else {
+            log.error("DOME Function {} unsupported", fun);
+        }
+    }
     private static void execute(HashMap<String, Object> m, HashMap<String, ArrayList<String>> calcResults, boolean replace, boolean destructiveMode) {
         log.debug("Executing with: {}", calcResults);
         if (calcResults.isEmpty()) {return;}

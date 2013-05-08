@@ -135,7 +135,9 @@ public class Engine {
                     Assume.run(data, rule.get("variable"), args, replace);
                 }
             }
-        } else {
+        } else if (cmd.equals("CREATE")) {
+            Calculate.create(data, rule.get("variable"), args);
+        }else {
             log.error("Invalid command: [{}]", cmd);
         }
     }

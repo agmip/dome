@@ -801,6 +801,18 @@ public class EngineTest {
         log.debug("Modified map: {}", testMap.toString());
         log.info("=== END TEST ===");
     }
+
+    @Test
+    public void CreateNewEventTest() {
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
+        log.info("=== NEW_EVENT() TEST ===");
+        log.debug("Starting map: {}", testMap);
+        createRule("CREATE", "Irrigation", "NEW_EVENT()|3|irop|IR010|irval|150");
+        e.apply(testMap);
+        log.debug("Modified map: {}", testMap.toString());
+        log.info("=== END TEST ===");
+    }
     
     @After
     public void tearDown() {
