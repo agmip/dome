@@ -120,7 +120,7 @@ public class Calculate extends Command {
             }
             ArrayList<HashMap<String, String>> newEvents = ExperimentHelper.getOMDistribution(m, newArgs[0], newArgs[1], newArgs[2], newArgs[3], newArgs[4], newArgs[5]);
             ArrayList<HashMap<String, String>> events = MapUtil.getBucket(m, "management").getDataList();
-            events.clear();
+//            events.clear();
             events.addAll(newEvents);
             mapModified = true;
         } else if (fun.equals("ROOT_DIST()")) {

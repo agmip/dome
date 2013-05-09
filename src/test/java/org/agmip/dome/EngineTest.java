@@ -274,7 +274,7 @@ public class EngineTest {
     public void CalcOMDistTest() {
         HashMap<String, Object> testMap = new HashMap<String, Object>();
         AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
-        AcePathfinderUtil.insertValue(testMap, "omamt", "1000");
+        AcePathfinderUtil.insertValue(testMap, "om_tot", "1000");
         log.info("=== OM_DIST() TEST ===");
         log.debug("Starting map: {}", testMap);
         createRule("FILL", "omdat", "OM_DIST()|-7|RE003|8.3|5|50|2.5");
