@@ -218,7 +218,7 @@ public class Calculate extends Command {
             for (int i = 2; i < newArgs.length; i += 2) {
                 info.put(newArgs[i -1].toLowerCase(), newArgs[i]);
             }
-            HashMap<String, String> newEvent = ExperimentHelper.createEvent(m, var, newArgs[0], info);
+            HashMap<String, String> newEvent = ExperimentHelper.createEvent(m, var, newArgs[0], info, true);
             if (!newEvent.isEmpty()) {
                 MapUtil.getBucket(m, "management").getDataList().add(newEvent);
             } else {
