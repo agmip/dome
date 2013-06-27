@@ -222,6 +222,28 @@ public class DomeFunctions {
         }
     }
 
+    public static void removeAllEventsExceptCropInfo(HashMap m) {
+        log.debug("ENTERING THE FRAY2!!!");
+        String path = AcePathfinder.INSTANCE.getPath("pdate");
+        log.debug("Looking for path ! {}", path);
+        HashMap pointer = AcePathfinderUtil.traverseToPoint(m, path);
+        if (pointer != null) {
+            log.debug("Pointer RAE: {}", pointer.toString());
+            ArrayList<HashMap<String, String>> events = new MapUtil.BucketEntry(pointer).getDataList();
+            ArrayList<HashMap<String, String>> newEvents = new ArrayList<HashMap<String, String>>();
+            for (HashMap<String, String> event : events) {
+                if (MapUtil.getValueOr(event, "event", "").equals("planting")) {
+                    HashMap<String, String> plEvent = new HashMap<String, String>();
+                    plEvent.putAll(event);
+                    plEvent.remove("date");
+                    newEvents.add(plEvent);
+                }
+            }
+            events.clear();
+            events.addAll(newEvents);
+        }
+    }
+
     protected static class KVPair {
         private final String key;
         private final String value;

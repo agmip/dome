@@ -142,7 +142,7 @@ public class Calculate extends Command {
                 log.error("Cannot remove all events from a FILL command");
                 return;
             } else {
-                DomeFunctions.removeAllEvents(m);
+                DomeFunctions.removeAllEventsExceptCropInfo(m);
                 mapModified = true;
             }
         } else if (fun.equals("AUTO_PDATE()")) {
