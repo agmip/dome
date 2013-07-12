@@ -162,7 +162,7 @@ public class Engine {
                 HashMap<String, String> gemRule = genRules.get(genRules.size() - 1);
                 if (!gemRule.isEmpty()) {
                     generators.add(gemRule);
-                    arr = runGenerators(data, cur != genGroups.size() - 1);
+                    arr = runGenerators(data, cur != genGroups.size());
                     generators.clear();
                 }
             }
@@ -205,7 +205,7 @@ public class Engine {
                 HashMap<String, String> gemRule= genRules.get(genRules.size() - 1);
                 if (!gemRule.isEmpty()) {
                     generators.add(gemRule);
-                    results = runGenerators(dataArr, cur != genGroups.size() - 1);
+                    results = runGenerators(dataArr, cur != genGroups.size());
                     generators.clear();
                 } else {
                     results = dataArr;

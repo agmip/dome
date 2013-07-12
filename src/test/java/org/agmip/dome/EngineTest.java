@@ -495,6 +495,7 @@ public class EngineTest {
         
         rules = new ArrayList<HashMap<String, String>>();
         rules.add(createRule2("REPLACE", "sadat", "OFFSET_DATE()|$PDATE|-30"));
+        rules.add(createRule2("REPLACE", "SLRGF", "ROOT_DIST()|1.0|20|200"));
         e.addGenGroup(rules, new HashMap());
         
         e.enableGenerators();
@@ -523,7 +524,8 @@ public class EngineTest {
             i++;
             log.debug("Generated Exp {}: {}", i, exp.toString());
         }
-        log.info("=== END TEST ===");
+        log.debug("Generated soils: {}", testMap.get("soils"));
+        log.info("=== END TEST3 ===");
     }
 
     @Test
