@@ -439,7 +439,7 @@ public class EngineTest {
             log.error("Unable to find mach_fast.json");
             assertTrue(false);
         }
-        createRule("REPLACE", "sc_year", "1981");
+        createRule("REPLACE", "sc_year", "1984");
         createRule("REPLACE", "exp_dur", "3");
         createEngineRule(e, "REPLACE", "pdate", "AUTO_REPLICATE_EVENTS()", true);
         e.enableGenerators();
