@@ -135,6 +135,8 @@ public class Engine {
                     Assume.run(data, rule.get("variable"), args, replace);
                 }
             }
+        } else if (cmd.equals("CREATE")) {
+            Calculate.create(data, rule.get("variable"), args);
         } else {
             log.error("Invalid command: [{}]", cmd);
         }
@@ -160,7 +162,7 @@ public class Engine {
                 HashMap<String, String> gemRule = genRules.get(genRules.size() - 1);
                 if (!gemRule.isEmpty()) {
                     generators.add(gemRule);
-                    arr = runGenerators(data, cur != genGroups.size() - 1);
+                    arr = runGenerators(data, cur != genGroups.size());
                     generators.clear();
                 }
             }
@@ -203,7 +205,7 @@ public class Engine {
                 HashMap<String, String> gemRule= genRules.get(genRules.size() - 1);
                 if (!gemRule.isEmpty()) {
                     generators.add(gemRule);
-                    results = runGenerators(dataArr, cur != genGroups.size() - 1);
+                    results = runGenerators(dataArr, cur != genGroups.size());
                     generators.clear();
                 } else {
                     results = dataArr;
@@ -435,6 +437,62 @@ public class Engine {
             return new ArrayList<HashMap<String, Object>>();
         }
 
+    }
+
+    public boolean updateWSRef(HashMap<String, Object> exp, boolean isStgDome, boolean isStgMode) {
+        HashMap newRule;
+        boolean isClimIDchanged = false;
+        for (HashMap<String, String> rule : rules) {
+            String var = MapUtil.getValueOr(rule, "variable", "").toLowerCase();
+            String cmd = MapUtil.getValueOr(rule, "cmd", "").toUpperCase();
+            if (var.equals("clim_id")) {
+                
+                String wst_id = MapUtil.getValueOr(exp, "wst_id", "");
+                String val = MapUtil.getValueOr(rule, "args", "").toUpperCase();
+                if (val.equals("")) {
+                    val = "0XXX";
+                }
+
+                // scan seasonal strategy dome, or overlay dome in overlay mode
+                if (isStgDome || (!isStgMode && val.startsWith("0"))) {
+                    if (wst_id.length() > 4) {
+                        wst_id = wst_id.substring(0, 4) + val;
+                    } else if (wst_id.length() > 0) {
+                        wst_id += val;
+                    }
+                    newRule = new HashMap();
+                    newRule.put("cmd", "REPLACE");
+                    newRule.put("args", wst_id);
+                    newRule.put("variable", "wst_id");
+                    applyRule(exp, newRule);
+                    exp.remove("soil");
+                    exp.remove("weather");
+                    exp.put("clim_id", val);
+                    isClimIDchanged = true;
+                }
+                
+                if (!isStgMode && !val.startsWith("0")) {
+                    log.warn("Invalid CLIM_ID assigned for baseline weather data: {}", val);
+                }
+                
+                // Commented this statement to avoid destroy the updated linkage, both REPLACE and FILL
+                if (!cmd.equals("INFO")) {
+                    rule.put("cmd", "INFO");
+                }
+            } else if (var.equals("wst_id") || var.equals("soil_id")) {
+                if (!cmd.equals("FILL")) {
+                    rule.put("cmd", "REPLACE");
+                }
+                applyRule(exp, rule);
+                exp.remove("soil");
+                exp.remove("weather");
+                // Commented this statement to avoid destroy the updated linkage
+                if (!cmd.equals("FILL")) {
+                    rule.put("cmd", "INFO");
+                }
+            }
+        }
+        return isClimIDchanged;
     }
 
     protected void addRule(HashMap<String, String> rule) {
