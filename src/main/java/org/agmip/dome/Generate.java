@@ -120,7 +120,7 @@ public class Generate {
             if (args.length != 0) {
                 log.warn("Too many arguments for {}", fun);
             }
-            return ExperimentHelper.getAutoEventDate(m);
+            return ExperimentHelper.getAutoEvent(m);
         } else {
             log.error("DOME Function {} unsupported. 2", fun);
             return new ArrayList<ArrayList<HashMap<String, String>>>();

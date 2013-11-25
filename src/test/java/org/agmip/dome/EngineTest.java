@@ -274,7 +274,7 @@ public class EngineTest {
     public void CalcOMDistTest() {
         HashMap<String, Object> testMap = new HashMap<String, Object>();
         AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
-        AcePathfinderUtil.insertValue(testMap, "omamt", "1000");
+        AcePathfinderUtil.insertValue(testMap, "om_tot", "1000");
         log.info("=== OM_DIST() TEST ===");
         log.debug("Starting map: {}", testMap);
         createRule("FILL", "omdat", "OM_DIST()|-7|RE003|8.3|5|50|2.5");
@@ -439,7 +439,7 @@ public class EngineTest {
             log.error("Unable to find mach_fast.json");
             assertTrue(false);
         }
-        createRule("REPLACE", "sc_year", "1981");
+        createRule("REPLACE", "sc_year", "1984");
         createRule("REPLACE", "exp_dur", "3");
         createEngineRule(e, "REPLACE", "pdate", "AUTO_REPLICATE_EVENTS()", true);
         e.enableGenerators();
@@ -495,6 +495,7 @@ public class EngineTest {
         
         rules = new ArrayList<HashMap<String, String>>();
         rules.add(createRule2("REPLACE", "sadat", "OFFSET_DATE()|$PDATE|-30"));
+        rules.add(createRule2("REPLACE", "SLRGF", "ROOT_DIST()|1.0|20|200"));
         e.addGenGroup(rules, new HashMap());
         
         e.enableGenerators();
@@ -523,7 +524,8 @@ public class EngineTest {
             i++;
             log.debug("Generated Exp {}: {}", i, exp.toString());
         }
-        log.info("=== END TEST ===");
+        log.debug("Generated soils: {}", testMap.get("soils"));
+        log.info("=== END TEST3 ===");
     }
 
     @Test
@@ -578,6 +580,74 @@ public class EngineTest {
         for(HashMap<String, Object> exp : newExperiments) {
             i++;
             log.debug("Generated Exp {}: {}", i, exp.toString());
+        }
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    @Ignore
+    public void GenerateMachakosFastTest5() {
+        log.info("=== GENERATE() TEST5 ===");
+        URL resource = this.getClass().getResource("/mach_fast.json");
+        String json = "";
+        try {
+            json = new Scanner(new File(resource.getPath()), "UTF-8").useDelimiter("\\A").next();
+        } catch (Exception ex) {
+            log.error("Unable to find mach_fast.json");
+            assertTrue(false);
+        }
+        ArrayList<HashMap<String, String>> rules;
+        
+//        rules= new ArrayList<HashMap<String, String>>();
+//        rules.add(createRule2("REPLACE", "exp_dur", "5"));
+//        e.addGenGroup(rules, createRule2("REPLACE", "pdate", "AUTO_REPLICATE_EVENTS()"));
+//        
+//        rules = new ArrayList<HashMap<String, String>>();
+//        rules.add(createRule2("REPLACE", "sc_year", "1991"));
+//        rules.add(createRule2("REPLACE", "exp_dur", "5"));
+//        e.addGenGroup(rules, createRule2("REPLACE", "pdate", "AUTO_PDATE()|0501|0701|25|5"));
+        
+        rules = new ArrayList<HashMap<String, String>>();
+        rules.add(createRule2("REPLACE", "wst_id", "AAAA"));
+        rules.add(createRule2("REPLACE", "soil_id", "BBBB"));
+        e.addGenGroup(rules, new HashMap());
+        
+        e.enableGenerators();
+        log.debug("Added generators: {}", e.getGenerators());
+        
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        try {
+            testMap = JSONAdapter.fromJSON(json);
+        } catch (Exception ex) {
+            log.error("Unable to convert JSON");
+            assertTrue(false);
+        }
+
+//        ArrayList<HashMap<String, Object>> fp = MapUtil.flatPack(testMap);
+        ArrayList<HashMap<String, Object>> fp = MapUtil.getRawPackageContents(testMap, "experiments");
+        log.debug("Flatpack count: {}", fp.size());
+        HashMap<String, Object> tm = fp.get(0);
+        ArrayList<HashMap<String, Object>> newExperiments = e.applyStg(tm);
+        assertEquals("Improper number of generated experiments", 1, newExperiments.size());
+        int i = 0;
+        for(HashMap<String, Object> exp : newExperiments) {
+            i++;
+            log.debug("Generated WST_ID in Exp {}: {}, {}", i, MapUtil.getValueOr(exp, "wst_id", "N/A"), MapUtil.getValueOr((HashMap) MapUtil.getObjectOr(exp, "weather", new HashMap()), "wst_id", "N/a"));
+            log.debug("Generated WST_ID in Exp {}: {}, {}", i, MapUtil.getValueOr(exp, "soil_id", "N/A"), MapUtil.getValueOr((HashMap) MapUtil.getObjectOr(exp, "soil", new HashMap()), "soil_id", "N/a"));
+            log.debug("Generated Exp {}: {}", i, exp.toString());
+        }
+//        i = 0;
+//        for(HashMap<String, Object> exp : newExperiments) {
+//            i++;
+//            log.debug("Generated Exp {}: {}", i, exp.toString());
+//        }
+        ArrayList<HashMap<String, Object>> soils = MapUtil.getRawPackageContents(testMap, "soils");
+        for(HashMap<String, Object> soil : soils) {
+            log.debug("Soil data {}: {}", i, MapUtil.getValueOr(soil, "soil_id", "N/A"));
+        }
+        ArrayList<HashMap<String, Object>> wths = MapUtil.getRawPackageContents(testMap, "weathers");
+        for(HashMap<String, Object> wth : wths) {
+            log.debug("Weather data {}: {}", i, MapUtil.getValueOr(wth, "wst_id", "N/A"));
         }
         log.info("=== END TEST ===");
     }
@@ -797,6 +867,18 @@ public class EngineTest {
         log.info("=== PADDY() TEST ===");
         log.debug("Starting map: {}", testMap);
         createRule("REPLACE", "idate", "PADDY()|3|2|150|-3|20|5|4|30|10|11|50|15");
+        e.apply(testMap);
+        log.debug("Modified map: {}", testMap.toString());
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    public void CreateNewEventTest() {
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
+        log.info("=== NEW_EVENT() TEST ===");
+        log.debug("Starting map: {}", testMap);
+        createRule("CREATE", "Irrigation", "NEW_EVENT()|3|irop|IR010|irval|150");
         e.apply(testMap);
         log.debug("Modified map: {}", testMap.toString());
         log.info("=== END TEST ===");
