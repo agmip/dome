@@ -191,6 +191,25 @@ public class DomeFunctions {
     
     public static HashMap<String, ArrayList<String>> getTavAndAmp(HashMap m) {
         HashMap<String, ArrayList<String>> results = new HashMap<String, ArrayList<String>>();
+        // Check if the data is already been applied with the DOME function
+        HashMap wthData;
+        if (m.containsKey("weather") || !m.containsKey("dailyWeather")) {
+            wthData = MapUtil.getObjectOr(m, "weather", new HashMap());
+        } else {
+            wthData = m;
+        }
+        String appliedDomeFuns = MapUtil.getValueOr(wthData, "applied_dome_functions", "").toUpperCase();
+        if (appliedDomeFuns.contains("TAVAMP()")) {
+            log.debug("Skip applying TAVAMP since it has already been applied to this weather site data.");
+            return results;
+        } else {
+            if (appliedDomeFuns.equals("")) {
+                appliedDomeFuns = "TAVAMP()";
+            } else {
+                appliedDomeFuns += "|TAVAMP()";
+            }
+        }
+        
         HashMap<String, String> ret = WeatherHelper.getTavAndAmp(m);
         String tav = ret.get("tav");
         if (tav == null) {
@@ -208,6 +227,8 @@ public class DomeFunctions {
             arr.add(tamp);
             results.put("tamp", arr);
         }
+        // Add the applied function name to the flags
+        wthData.put("applied_dome_functions", appliedDomeFuns);
         return results;
     }
 
