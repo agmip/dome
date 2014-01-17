@@ -121,12 +121,22 @@ public class Engine {
                 replace = false;
             }
             if (args[0].endsWith("()")) {
-                Calculate.run(data, rule.get("variable"), args, replace);
+                if (cmd.equals("REPLACE_FIELD_ONLY")) {
+                    log.debug("Found FIELD_ONLY replace");
+                    if (data.containsKey("seasonal_dome_applied")) {
+                        log.info("Replace for {} not applied due to FIELD_ONLY restriction", rule.get("variable"));
+                    } else {
+                        log.debug("Found data without seasonal_dome_applied set.");
+                        Calculate.run(data, rule.get("variable"), args, replace);
+                    }
+                } else {
+                    Calculate.run(data, rule.get("variable"), args, replace);
+                }
             } else {
                 if (cmd.equals("REPLACE_FIELD_ONLY")) {
                     log.debug("Found FIELD_ONLY replace");
                     if (data.containsKey("seasonal_dome_applied")) {
-                        log.warn("Replace for {} not applied due to FIELD_ONLY restriction", rule.get("variable"));
+                        log.info("Replace for {} not applied due to FIELD_ONLY restriction", rule.get("variable"));
                     } else {
                         log.debug("Found data without seasonal_dome_applied set.");
                         Assume.run(data, rule.get("variable"), args, replace);
