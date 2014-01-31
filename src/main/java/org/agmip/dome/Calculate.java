@@ -262,7 +262,7 @@ public class Calculate extends Command {
                     continue;
                 }
 
-                for (int i=0; i < pointerSize; i++) {
+                for (int i=0, j=0; i < pointerSize; i++) {
                     String liveEvent = "";
                     Object objEvent = pointer.get(i).get("event");
                     if (objEvent != null) {
@@ -270,12 +270,13 @@ public class Calculate extends Command {
                     }
                     if (liveEvent.equals(eventType)) {
                         log.debug("Level 1 passed, i: {} ss: {}", i, sourceSize);
-                        if ( i < sourceSize ) {
+                        if ( j < sourceSize ) {
                             log.debug("Level 2 passed");
                             if (replace || (!replace && !varHasValue(pointer.get(i), targetVariable, isEvent))) {
                                 // Replace if only I have something for you.
                                 log.debug("Level 3, writing [{}] now", var);
-                                pointer.get(i).put(var, values.get(i));
+                                pointer.get(i).put(var, values.get(j));
+                                j++;
                             }
                         }
                     }
