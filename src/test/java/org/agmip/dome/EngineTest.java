@@ -390,6 +390,55 @@ public class EngineTest {
 
     @Test
     @Ignore
+    public void OffsetTest() {
+        log.info("=== OFFSET() TEST ===");
+        URL resource = this.getClass().getResource("/mach_fast.json");
+        String json = "";
+        try {
+            json = new Scanner(new File(resource.getPath()), "UTF-8").useDelimiter("\\A").next();
+        } catch (Exception ex) {
+            log.error("Unable to find mach_fast.json");
+            assertTrue(false);
+        }
+        createRule("REPLACE", "FEDATE", "DATE_OFFSET()|$FEDATE|-5");
+        createRule("REPLACE", "FEAMN", "OFFSET()|$FEAMN|10");
+        createRule("REPLACE", "FEDEP", "MULTIPLY()|$FEDEP|2");
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        try {
+            testMap = JSONAdapter.fromJSON(json);
+        } catch (Exception ex) {
+            log.error("Unable to convert JSON");
+            assertTrue(false);
+        }
+
+        ArrayList<HashMap<String, Object>> fp = MapUtil.flatPack(testMap);
+        log.debug("Flatpack count: {}", fp.size());
+        HashMap<String, Object> tm = fp.get(0);
+        ArrayList<HashMap<String, String>> events = MapUtil.getBucket(tm, "management").getDataList();
+        int i = 0;
+        ArrayList<String> oringalFeEvents = new ArrayList();
+        for (HashMap<String, String> event : events) {
+            if ("fertilizer".equals(event.get("event"))) {
+                oringalFeEvents.add(event.toString());
+                log.debug("Original Fertilizer Event {} : {}", i, event.toString());
+                i++;
+            }
+        }
+        
+        e.apply(tm);
+        i = 0;
+        for (HashMap<String, String> event : events) {
+            if ("fertilizer".equals(event.get("event"))) {
+                log.debug("Original Fertilizer Event {} : {}", i, oringalFeEvents.get(i));
+                log.debug("_Updated Fertilizer Event {} : {}", i, event.toString());
+                i++;
+            }
+        }
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    @Ignore
     public void GenerateMachakosFastTest() {
         log.info("=== GENERATE() TEST ===");
         URL resource = this.getClass().getResource("/mach_fast.json");
