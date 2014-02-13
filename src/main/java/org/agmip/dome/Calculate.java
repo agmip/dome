@@ -189,6 +189,31 @@ public class Calculate extends Command {
                     mapModified = true;
                 }
             }
+        } else if (fun.equals("LYRSET()")) {
+            
+            HashMap soilData = MapUtil.getObjectOr(m, "soil", new HashMap());
+            String appliedDomeFuns = MapUtil.getValueOr(soilData, "applied_dome_functions", "").toUpperCase();
+            if (appliedDomeFuns.contains("LYRSET()")) {
+                log.debug("Skip applying LYRSET since it has already been applied to this soil site data.");
+            } else {
+                if (newArgs.length != 0) {
+                    log.warn("Too many arguments for {}", fun);
+                }
+                ArrayList<HashMap<String, String>> newLayers = SoilHelper.splittingSoillayer(m);
+                ArrayList<HashMap<String, String>> layers = MapUtil.getBucket(m, "soil").getDataList();
+                if (newLayers.size() > layers.size()) {
+//                    layers.clear();
+//                    layers.addAll(newLayers);
+                    soilData.put("soilLayer", newLayers);
+                }
+                if (appliedDomeFuns.equals("")) {
+                    appliedDomeFuns = "LYRSET()";
+                } else {
+                    appliedDomeFuns += "|LYRSET()";
+                }
+                soilData.put("applied_dome_functions", appliedDomeFuns);
+            }
+            mapModified = true;
         } else {
             log.error("DOME Function {} unsupported", fun);
             return;
