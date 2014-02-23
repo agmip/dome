@@ -959,7 +959,7 @@ public class EngineTest {
     }
 
     @Test
-//    @Ignore
+    @Ignore
     public void FillAutoIdateTest() {
         
         log.info("=== FILL AUTO_IDATE() TEST ===");
