@@ -957,6 +957,42 @@ public class EngineTest {
         assertEquals("LYRSET(): expected layer size is 11", 11, MapUtil.getBucket(testMap, "soil").getDataList().size());
         log.info("=== END TEST ===");
     }
+
+    @Test
+//    @Ignore
+    public void FillAutoIdateTest() {
+        
+        log.info("=== FILL AUTO_IDATE() TEST ===");
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        URL resource = this.getClass().getResource("/mach_fast.json");
+        String json = "";
+        try {
+            json = new Scanner(new File(resource.getPath()), "UTF-8").useDelimiter("\\A").next();
+        } catch (Exception ex) {
+            log.error("Unable to find mach_fast.json");
+            assertTrue(false);
+        }
+        try {
+            testMap = JSONAdapter.fromJSON(json);
+        } catch (Exception ex) {
+            log.error("Unable to convert JSON");
+            assertTrue(false);
+        }
+        ArrayList<HashMap<String, Object>> fp = MapUtil.flatPack(testMap);
+        log.debug("Flatpack count: {}", fp.size());
+        createRule("REPLACE", "pdate", "AUTO_IDATE()|2|5|400|30|160|40");
+        HashMap<String, Object> tm;
+        ArrayList<HashMap<String, String>> events;
+        
+        tm = fp.get(0);
+        AcePathfinderUtil.insertValue(tm, "idate", "19801231");
+        events = MapUtil.getBucket(tm, "management").getDataList();
+        log.info("Starting events in the Map: {}", events.toString());
+        e.apply(tm);
+        log.info("Modified events in the Map: {}", events.toString());
+        
+        log.info("=== END TEST ===");
+    }
     
     @After
     public void tearDown() {
