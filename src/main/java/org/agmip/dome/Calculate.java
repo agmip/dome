@@ -188,6 +188,52 @@ public class Calculate extends Command {
                     events.addAll(irEvents);
                     mapModified = true;
                 }
+            } 
+        } else if (fun.equals("AUTO_IDATE()")) {
+            if (newArgs.length < 4) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            } else {
+                int numOfApplications = Functions.numericStringToBigInteger(newArgs[0]).intValue();
+                int reqNum = numOfApplications * 2 + 2;
+                if (newArgs.length < reqNum) {
+                    log.error("Not enough arguments for {}", fun);
+                    return;
+                } else {
+                    ArrayList<String> gddArr = new ArrayList<String>();
+                    ArrayList<String> irvalArr = new ArrayList<String>();
+                    if (newArgs.length > reqNum) {
+                        log.warn("Too many arguments for {}, will only apply first {} group of irrigation information", fun, numOfApplications);
+                    }
+                    for (int i = 2; i < reqNum ; i++) {
+                        if (i % 2 == 0) {
+                            gddArr.add(newArgs[i]);
+                        } else {
+                            irvalArr.add(newArgs[i]);
+                        }
+                    }
+                    log.debug("Calling with GDD: {} and IRVAL: {}", gddArr, irvalArr);
+
+                    String [] maxArr = gddArr.toArray(new String[gddArr.size()]);
+                    String [] minArr = irvalArr.toArray(new String[irvalArr.size()]);
+                    
+                    ArrayList<HashMap<String, String>> irEvents = ExperimentHelper.getAutoIrrigationEvent(m, newArgs[0], newArgs[1], maxArr, minArr);
+                    ArrayList<HashMap<String, String>> events = MapUtil.getBucket(m, "management").getDataList();
+                    if (replace) {
+                        ArrayList<HashMap<String, String>> newEvents = new ArrayList();
+                        for (HashMap event : events) {
+                            if (!"irrigation".equals(MapUtil.getValueOr(event, "event", ""))) {
+                                newEvents.add(event);
+                            }
+                        }
+                        if (newEvents.size() != events.size()) {
+                            events.clear();
+                            events.addAll(newEvents);
+                        }
+                    }
+                    events.addAll(irEvents);
+                    mapModified = true;
+                }
             }
         } else if (fun.equals("LYRSET()")) {
             
