@@ -4,6 +4,7 @@ import com.rits.cloning.Cloner;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import org.agmip.ace.AcePathfinder;
 import org.agmip.functions.ExperimentHelper;
 import org.agmip.util.MapUtil;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ public class Engine {
     private ArrayList<HashMap<String, String>> rules;
     private ArrayList<HashMap<String, String>> generators;
     private boolean allowGenerators;
+    private boolean isSWExtracted = false;
     /* Each group contains multilpe non-generating rules at first, one and only one generating rule is allowed in the last of the array. */
     private ArrayList<ArrayList<HashMap<String, String>>> genGroups;
     private ArrayList<HashMap<String, String>> genRules = null;
@@ -94,7 +96,9 @@ public class Engine {
      */
     public void apply(HashMap<String, Object> data) {
         for (HashMap<String, String> rule : rules) {
-            applyRule(data, rule);
+            if (!isSWExtracted || !isSoilWthRules(rule)) {
+                applyRule(data, rule);
+            }
         }
     }
 
@@ -158,7 +162,7 @@ public class Engine {
      * @param data The data set
      * @return The list of new generated data set
      */
-    public ArrayList<HashMap<String, Object>> applyStg(HashMap<String, Object> data) {        
+    public ArrayList<HashMap<String, Object>> applyStg(HashMap<String, Object> data) {
         // Check if there is generator command group left
         if (hasMoreGenRules()) {
             // Apply rules to input data
@@ -212,7 +216,7 @@ public class Engine {
                     }
                 }
                 // Apply generator rules to whole data set
-                HashMap<String, String> gemRule= genRules.get(genRules.size() - 1);
+                HashMap<String, String> gemRule = genRules.get(genRules.size() - 1);
                 if (!gemRule.isEmpty()) {
                     generators.add(gemRule);
                     results = runGenerators(dataArr, cur != genGroups.size());
@@ -424,7 +428,7 @@ public class Engine {
                     log.error("The number of calculated values is not match with the number of generated experiments");
                     return results;
                 }
-                
+
                 for (int i = 0; i < gAcc.size(); i++) {
                     Generate.applyGeneratedRules(dataArr.get(i), gAcc.get(i), null);
                 }
@@ -434,7 +438,7 @@ public class Engine {
                     log.error("The number of calculated events is not match with the number of generated experiments");
                     return results;
                 }
-                
+
                 for (int i = 0; i < newEventArrs.size(); i++) {
                     Generate.applyReplicatedEvents(dataArr.get(i), newEventArrs.get(i), null);
                 }
@@ -456,7 +460,7 @@ public class Engine {
             String var = MapUtil.getValueOr(rule, "variable", "").toLowerCase();
             String cmd = MapUtil.getValueOr(rule, "cmd", "").toUpperCase();
             if (var.equals("clim_id")) {
-                
+
                 String wst_id = MapUtil.getValueOr(exp, "wst_id", "");
                 String val = MapUtil.getValueOr(rule, "args", "").toUpperCase();
                 if (val.equals("")) {
@@ -480,11 +484,11 @@ public class Engine {
                     exp.put("clim_id", val);
                     isClimIDchanged = true;
                 }
-                
+
                 if (!isStgMode && !val.startsWith("0")) {
                     log.warn("Invalid CLIM_ID assigned for baseline weather data: {}", val);
                 }
-                
+
                 // Commented this statement to avoid destroy the updated linkage, both REPLACE and FILL
                 if (!cmd.equals("INFO")) {
                     rule.put("cmd", "INFO");
@@ -557,5 +561,71 @@ public class Engine {
         }
 
         return genList;
+    }
+
+    public ArrayList<HashMap<String, String>> extractSoilWthRules() {
+        ArrayList<HashMap<String, String>> swRules;
+        if (allowGenerators) {
+            swRules = new ArrayList<HashMap<String, String>>();
+            for (ArrayList<HashMap<String, String>> genGroup : genGroups) {
+                swRules.addAll(extractSoilWthRules(genGroup));
+            }
+        } else {
+            swRules = extractSoilWthRules(rules);
+        }
+        isSWExtracted = true;
+
+        return swRules;
+    }
+
+    private ArrayList<HashMap<String, String>> extractSoilWthRules(ArrayList<HashMap<String, String>> rules) {
+        ArrayList<HashMap<String, String>> swRules = new ArrayList<HashMap<String, String>>();
+        for (HashMap<String, String> rule : rules) {
+            if (isSoilWthRules(rule)) {
+                swRules.add(rule);
+            }
+        }
+        return swRules;
+    }
+    
+    private boolean isSoilWthRules(HashMap<String, String> rule) {
+        boolean isSWRule = false;
+        String cmd = rule.get("cmd").toUpperCase();
+        String var = rule.get("variable");
+
+        // NPE defender
+        if (var == null) {
+            log.error("Invalid rule: {}", rule.toString());
+            return isSWRule;
+        }
+
+        String a = rule.get("args");
+        if (a == null) {
+            a = "";
+        }
+        String[] args = a.split("[|]");
+
+        if (cmd.equals("INFO")) {
+            log.debug("Recevied an INFO command");
+        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY")) {
+            // If it is simple calculation or set value directly to the soil/weather variable
+            if (!args[0].endsWith("()")
+                    || args[0].equals("OFFSET()")
+                    || args[0].equals("MULTIPLY()")
+                    || args[0].equals("OFFSET_DATE()")
+                    || args[0].equals("DATE_OFFSET()")) {
+                String path = Command.getPathOrRoot(var);
+                if (path.contains("soil") || path.contains("weather")) {
+                    isSWRule = true;
+                }
+            } // If call function which might change soil/weather data
+            else if (args[0].equals("ROOT_DIST()")
+                    || args[0].equals("STABLEC()")
+                    || args[0].equals("TAVAMP()")
+                    || args[0].equals("LYRSET()")) {
+                isSWRule = true;
+            }
+        }
+        return isSWRule;
     }
 }
