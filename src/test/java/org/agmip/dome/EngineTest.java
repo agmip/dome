@@ -993,6 +993,45 @@ public class EngineTest {
         
         log.info("=== END TEST ===");
     }
+
+    @Test
+    public void ArrayTranposeTest() {
+        
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        AcePathfinderUtil.insertValue(testMap, "sllb", "10");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.15");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "40");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.16");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "80");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.21");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "110");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.23");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "180");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.31");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "250");
+        AcePathfinderUtil.insertValue(testMap, "slbdm", "1.31");
+        AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
+        log.info("=== TRANSPOSE() TEST ===");
+        log.debug("Starting map: {}", testMap);
+        
+        createRule("FILL", "SLDUL", "TRANSPOSE()|0.15|0.13|0.12|0.09|0.08|0.07|0.06");
+        e.apply(testMap);
+        log.debug("Modified map: {}", testMap.toString());
+        
+        e = new Engine();
+        createRule("REPLACE", "SLDUL", "TRANSPOSE()|0.16|0.14|0.13");
+        e.apply(testMap);
+        log.debug("Modified map: {}", testMap.toString());
+        
+        log.info("=== END TEST ===");
+        
+        e = new Engine();
+        createRule("REPLACE", "SLDUL", "TRANSPOSE()|0.15|0.13|0.12|0.09|0.08|0.07|0.05");
+        e.apply(testMap);
+        log.debug("Modified map: {}", testMap.toString());
+        
+        log.info("=== END TEST ===");
+    }
     
     @After
     public void tearDown() {

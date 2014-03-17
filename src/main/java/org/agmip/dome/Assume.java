@@ -123,7 +123,7 @@ public class Assume extends Command {
         if (AcePathfinderUtil.isDate(var)) {
             ret = val.replaceAll("[-/:]", "");
             if (!ret.matches("\\d{8,8}")) {
-                log.error("Found unsupported date format: {}", val);
+                log.error("Found unsupported date format: {} for {}", val, var);
                 ret = val;
             }
         }
