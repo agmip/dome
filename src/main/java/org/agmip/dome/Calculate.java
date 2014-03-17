@@ -52,7 +52,17 @@ public class Calculate extends Command {
             } else {
                 calcResults = DomeFunctions.multiply(m, var, newArgs[0], newArgs[1]);
             }
-        } else if (fun.equals("PCTAWC()")) {
+        } else if (fun.equals("TRANSPOSE()")) {
+            if (newArgs.length < 1) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            } else {
+                ArrayList<String> inputArr = new ArrayList();
+                inputArr.addAll(Arrays.asList(newArgs));
+                calcResults = new HashMap();
+                calcResults.put(var, inputArr);
+            }
+        }  else if (fun.equals("PCTAWC()")) {
             if (newArgs.length != 1) {
                 log.error("Invalid number of arguments for {}", fun);
                 return;
