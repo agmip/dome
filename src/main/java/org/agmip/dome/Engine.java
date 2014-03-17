@@ -613,7 +613,8 @@ public class Engine {
                     || args[0].equals("OFFSET()")
                     || args[0].equals("MULTIPLY()")
                     || args[0].equals("OFFSET_DATE()")
-                    || args[0].equals("DATE_OFFSET()")) {
+                    || args[0].equals("DATE_OFFSET()")
+                    || args[0].equals("TRANSPOSE()")) {
                 String path = Command.getPathOrRoot(var);
                 if (path.contains("soil") || path.contains("weather")) {
                     isSWRule = true;
