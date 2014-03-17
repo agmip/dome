@@ -24,29 +24,19 @@ public abstract class Command {
             } else {
                 return "";
             }
-        }
-        HashMap<String, Object> pointer = AcePathfinderUtil.traverseToPoint(m, path);
-        if (pointer == null) {
-            pointer = m;
-        }
-        
-        if (path.contains("@")) {
-            String[] temp = path.split("[!@]");
+        } else if (path.contains("@")) {
             boolean isEvent = false;
             if(path.contains("!")) {
                 isEvent = true;
             }
-            pointer = (HashMap<String,Object>) pointer.get(temp[0]);
-            if (pointer == null || !pointer.containsKey(temp[1])) {
+            ArrayList<HashMap<String, Object>> base = traverseAndGetSiblings(m, var);
+            if (base == null || base.isEmpty()) {
                 return "";
             } else {
                 // Loop through everything until you find it.
-                ArrayList<HashMap<String, Object>> base = (ArrayList<HashMap<String, Object>>) pointer.get(temp[1]);
+                var = AcePathfinderUtil.setEventDateVar(var, isEvent);
+                log.debug("Looking for var: {}", var);
                 for (HashMap<String, Object> item : base) {
-                    if (isEvent && (var.equals("pdate") || var.equals("idate") || var.equals("fedate") | var.equals("omdat") || var.equals("mladat") || var.equals("mlrdat") || var.equals("cdate") || var.equals("tdate") || var.equals("hadat"))) {
-                            var = "date";
-                    }
-                    log.debug("Looking for var: {}", var);
                     if (item.containsKey(var)) {
                         return (String) item.get(var);
                     }
@@ -54,6 +44,10 @@ public abstract class Command {
                 return "";
             }
         } else {
+            HashMap<String, Object> pointer = AcePathfinderUtil.traverseToPoint(m, path);
+            if (pointer == null) {
+                pointer = m;
+            }
             if (pointer.containsKey(var)) {
                 return (String) pointer.get(var);
             } else {
