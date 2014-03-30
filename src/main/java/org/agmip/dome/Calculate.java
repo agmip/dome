@@ -134,24 +134,24 @@ public class Calculate extends Command {
             events.addAll(newEvents);
             mapModified = true;
         } else if (fun.equals("ROOT_DIST()")) {
-            HashMap soilData = MapUtil.getObjectOr(m, "soil", new HashMap());
-            String appliedDomeFuns = MapUtil.getValueOr(soilData, "applied_dome_functions", "").toUpperCase();
-            if (appliedDomeFuns.contains("ROOT_DIST()")) {
-                log.debug("Skip applying ROOT_DIST since it has already been applied to this soil site data.");
-                mapModified = true;
-            } else {
-                if (newArgs.length < 3) {
-                    log.error("Not enough arguments for {}", fun);
-                    return;
-                }
-                calcResults = SoilHelper.getRootDistribution(m, var, newArgs[0], newArgs[1], newArgs[2]);
-                if (appliedDomeFuns.equals("")) {
-                    appliedDomeFuns = "ROOT_DIST()";
-                } else {
-                    appliedDomeFuns += "|ROOT_DIST()";
-                }
-                soilData.put("applied_dome_functions", appliedDomeFuns);
+//            HashMap soilData = MapUtil.getObjectOr(m, "soil", new HashMap());
+//            String appliedDomeFuns = MapUtil.getValueOr(soilData, "applied_dome_functions", "").toUpperCase();
+//            if (appliedDomeFuns.contains("ROOT_DIST()")) {
+//                log.debug("Skip applying ROOT_DIST since it has already been applied to this soil site data.");
+//                mapModified = true;
+//            } else {
+            if (newArgs.length < 3) {
+                log.error("Not enough arguments for {}", fun);
+                return;
             }
+            calcResults = SoilHelper.getRootDistribution(m, var, newArgs[0], newArgs[1], newArgs[2]);
+//                if (appliedDomeFuns.equals("")) {
+//                    appliedDomeFuns = "ROOT_DIST()";
+//                } else {
+//                    appliedDomeFuns += "|ROOT_DIST()";
+//                }
+//                soilData.put("applied_dome_functions", appliedDomeFuns);
+//            }
 //            mapModified = true;
         } else if (fun.equals("STABLEC()")) {
             HashMap soilData = MapUtil.getObjectOr(m, "soil", new HashMap());
