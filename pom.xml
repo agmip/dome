@@ -52,7 +52,7 @@
         <dependency>
             <groupId>org.agmip</groupId>
             <artifactId>ace-lookup</artifactId>
-            <version>1.2</version>
+            <version>1.2.2</version>
         </dependency>
         <dependency>
             <groupId>org.agmip</groupId>
