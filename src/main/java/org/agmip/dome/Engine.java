@@ -614,6 +614,7 @@ public class Engine {
                     || args[0].equals("MULTIPLY()")
                     || args[0].equals("OFFSET_DATE()")
                     || args[0].equals("DATE_OFFSET()")
+                    || args[0].equals("LYRSET()")
                     || args[0].equals("TRANSPOSE()")) {
                 String path = Command.getPathOrRoot(var);
                 if (path.contains("soil") || path.contains("weather")) {
@@ -622,8 +623,7 @@ public class Engine {
             } // If call function which might change soil/weather data
             else if (args[0].equals("ROOT_DIST()")
                     || args[0].equals("STABLEC()")
-                    || args[0].equals("TAVAMP()")
-                    || args[0].equals("LYRSET()")) {
+                    || args[0].equals("TAVAMP()")) {
                 isSWRule = true;
             }
         }

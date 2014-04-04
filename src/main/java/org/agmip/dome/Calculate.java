@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import org.agmip.ace.AcePathfinder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -272,28 +273,41 @@ public class Calculate extends Command {
                 }
             }
         } else if (fun.equals("LYRSET()")) {
-            
-            HashMap soilData = MapUtil.getObjectOr(m, "soil", new HashMap());
-            String appliedDomeFuns = MapUtil.getValueOr(soilData, "applied_dome_functions", "").toUpperCase();
-            if (appliedDomeFuns.contains("LYRSET()")) {
-                log.debug("Skip applying LYRSET since it has already been applied to this soil site data.");
-            } else {
-                if (newArgs.length != 0) {
-                    log.warn("Too many arguments for {}", fun);
+            String path = AcePathfinder.INSTANCE.getPath(var);
+            boolean isICLayers = false;
+            if (path == null || !path.contains("soilLayer")) {
+                log.warn("LYRSET() could not work for {}, please try SLLB or ICBL instead", var);
+                return;
+            } else if (path.contains("initial_conditions")) {
+                isICLayers = true;
+            }
+            HashMap soilData;
+            if (!isICLayers) {
+                soilData = MapUtil.getObjectOr(m, "soil", new HashMap());
+                String appliedDomeFuns = MapUtil.getValueOr(soilData, "applied_dome_functions", "").toUpperCase();
+                if (appliedDomeFuns.contains("LYRSET()")) {
+                    log.debug("Skip applying LYRSET since it has already been applied to this soil site data.");
+                    return;
+                } else {
+                    if (appliedDomeFuns.equals("")) {
+                        appliedDomeFuns = "LYRSET()";
+                    } else {
+                        appliedDomeFuns += "|LYRSET()";
+                    }
+                    soilData.put("applied_dome_functions", appliedDomeFuns);
                 }
-                ArrayList<HashMap<String, String>> newLayers = SoilHelper.splittingSoillayer(m);
-                ArrayList<HashMap<String, String>> layers = MapUtil.getBucket(m, "soil").getDataList();
-                if (newLayers.size() > layers.size()) {
+            } else {
+                soilData = MapUtil.getObjectOr(m, "initial_conditions", new HashMap());
+            }
+            if (newArgs.length != 0) {
+                log.warn("Too many arguments for {}", fun);
+            }
+            ArrayList<HashMap<String, String>> newLayers = SoilHelper.splittingSoillayer(m, isICLayers);
+            ArrayList<HashMap<String, String>> layers = new MapUtil.BucketEntry(soilData).getDataList();
+            if (newLayers.size() > layers.size()) {
 //                    layers.clear();
 //                    layers.addAll(newLayers);
-                    soilData.put("soilLayer", newLayers);
-                }
-                if (appliedDomeFuns.equals("")) {
-                    appliedDomeFuns = "LYRSET()";
-                } else {
-                    appliedDomeFuns += "|LYRSET()";
-                }
-                soilData.put("applied_dome_functions", appliedDomeFuns);
+                soilData.put("soilLayer", newLayers);
             }
             mapModified = true;
         } else {
