@@ -938,23 +938,36 @@ public class EngineTest {
         HashMap<String, Object> testMap = new HashMap<String, Object>();
         AcePathfinderUtil.insertValue(testMap, "sllb", "10");
         AcePathfinderUtil.insertValue(testMap, "slbdm", "1.15");
+        AcePathfinderUtil.insertValue(testMap, "icbl", "10");
+        AcePathfinderUtil.insertValue(testMap, "ich2o", "1.15");
         AcePathfinderUtil.insertValue(testMap, "sllb", "40");
         AcePathfinderUtil.insertValue(testMap, "slbdm", "1.16");
+        AcePathfinderUtil.insertValue(testMap, "icbl", "40");
+        AcePathfinderUtil.insertValue(testMap, "ich2o", "1.16");
         AcePathfinderUtil.insertValue(testMap, "sllb", "80");
         AcePathfinderUtil.insertValue(testMap, "slbdm", "1.21");
+        AcePathfinderUtil.insertValue(testMap, "icbl", "80");
+        AcePathfinderUtil.insertValue(testMap, "ich2o", "1.21");
         AcePathfinderUtil.insertValue(testMap, "sllb", "110");
         AcePathfinderUtil.insertValue(testMap, "slbdm", "1.23");
+        AcePathfinderUtil.insertValue(testMap, "icbl", "110");
+        AcePathfinderUtil.insertValue(testMap, "ich2o", "1.23");
         AcePathfinderUtil.insertValue(testMap, "sllb", "180");
         AcePathfinderUtil.insertValue(testMap, "slbdm", "1.31");
+        AcePathfinderUtil.insertValue(testMap, "icbl", "180");
+        AcePathfinderUtil.insertValue(testMap, "ich2o", "1.31");
         AcePathfinderUtil.insertValue(testMap, "sllb", "250");
         AcePathfinderUtil.insertValue(testMap, "slbdm", "1.31");
+        AcePathfinderUtil.insertValue(testMap, "icbl", "250");
+        AcePathfinderUtil.insertValue(testMap, "ich2o", "1.31");
         AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
         log.info("=== LYRSET() TEST ===");
         log.debug("Starting map: {}", testMap);
         createRule("REPLACE", "SLLB", "LYRSET()|123");
+        createRule("FILL", "ICBL", "LYRSET()");
         e.apply(testMap);
         log.debug("Modified map: {}", testMap.toString());
-        assertEquals("LYRSET(): expected layer size is 11", 11, MapUtil.getBucket(testMap, "soil").getDataList().size());
+        assertEquals("LYRSET(): expected layer size is 12", 12, MapUtil.getBucket(testMap, "soil").getDataList().size());
         log.info("=== END TEST ===");
     }
 
