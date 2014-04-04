@@ -3,7 +3,7 @@
 
     <groupId>org.agmip</groupId>
     <artifactId>dome</artifactId>
-    <version>1.4.3-SNAPSHOT</version>
+    <version>1.4.3</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -31,7 +31,7 @@
         <url>https://github.com/agmip/dome</url>
         <connection>scm:git:git://github.com/agmip/dome.git</connection>
         <developerConnection>scm:git:git@github.com:agmip/dome.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>dome-1.4.3</tag>
     </scm>
 
     <developers>
