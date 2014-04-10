@@ -397,9 +397,14 @@ public class Calculate extends Command {
                                 // Replace if only I have something for you.
                                 log.debug("Level 3, writing [{}] now", var);
                                 pointer.get(i).put(var, values.get(j));
-                                j++;
+                                if (isEvent) {
+                                    j++;
+                                }
                             }
                         }
+                    }
+                    if (!isEvent) {
+                        j++;
                     }
                 }
             } else {

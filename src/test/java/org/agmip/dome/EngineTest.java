@@ -1015,6 +1015,7 @@ public class EngineTest {
         AcePathfinderUtil.insertValue(testMap, "slbdm", "1.15");
         AcePathfinderUtil.insertValue(testMap, "sllb", "40");
         AcePathfinderUtil.insertValue(testMap, "slbdm", "1.16");
+        AcePathfinderUtil.insertValue(testMap, "sldul", "0.14");
         AcePathfinderUtil.insertValue(testMap, "sllb", "80");
         AcePathfinderUtil.insertValue(testMap, "slbdm", "1.21");
         AcePathfinderUtil.insertValue(testMap, "sllb", "110");
