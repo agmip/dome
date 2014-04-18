@@ -1046,6 +1046,32 @@ public class EngineTest {
         
         log.info("=== END TEST ===");
     }
+
+    @Test
+    public void PTCALCTest() {
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        AcePathfinderUtil.insertValue(testMap, "sllb", "30");
+        AcePathfinderUtil.insertValue(testMap, "slsnd", "20");
+        AcePathfinderUtil.insertValue(testMap, "slcly", "50");
+        AcePathfinderUtil.insertValue(testMap, "sloc", "2");
+        AcePathfinderUtil.insertValue(testMap, "slll", "0.1");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "50");
+        AcePathfinderUtil.insertValue(testMap, "slsnd", "30");
+        AcePathfinderUtil.insertValue(testMap, "slcly", "40");
+        AcePathfinderUtil.insertValue(testMap, "sloc", "1");
+        AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
+        log.info("=== PTCALC() TEST ===");
+        log.debug("Starting map: {}", testMap);
+        createRule("FILL", "SLLB", "PTCALC()|PTSAXTON2006|ALL");
+        e.apply(testMap);
+        log.debug("Modified map 1: {}", testMap.toString());
+        
+        e = new Engine();
+        createRule("REPLACE", "SLLB", "PTCALC()|PTSAXTON2006|SLLL");
+        e.apply(testMap);
+        log.debug("Modified map 2: {}", testMap.toString());
+        log.info("=== END TEST ===");
+    }
     
     @After
     public void tearDown() {

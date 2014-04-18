@@ -627,6 +627,7 @@ public class Engine {
                 }
             } // If call function which might change soil/weather data
             else if (args[0].equals("STABLEC()")
+                    || args[0].equals("PTCALC()")
                     || args[0].equals("TAVAMP()")) {
                 isSWRule = true;
             }
