@@ -614,15 +614,20 @@ public class Engine {
                     || args[0].equals("MULTIPLY()")
                     || args[0].equals("OFFSET_DATE()")
                     || args[0].equals("DATE_OFFSET()")
+                    || args[0].equals("ROOT_DIST()")
                     || args[0].equals("LYRSET()")
                     || args[0].equals("TRANSPOSE()")) {
                 String path = Command.getPathOrRoot(var);
-                if (path.contains("soil") || path.contains("weather")) {
-                    isSWRule = true;
+                String[] paths = path.split(",");
+                for (String p : paths) {
+                    if (p.equals("soil") || p.equals("soil@soilLayer") || p.equals("weather") || p.equals("weather@dailyWeather")) {
+                        isSWRule = true;
+                        break;
+                    }
                 }
             } // If call function which might change soil/weather data
-            else if (args[0].equals("ROOT_DIST()")
-                    || args[0].equals("STABLEC()")
+            else if (args[0].equals("STABLEC()")
+                    || args[0].equals("PTCALC()")
                     || args[0].equals("TAVAMP()")) {
                 isSWRule = true;
             }

@@ -310,6 +310,30 @@ public class Calculate extends Command {
                 soilData.put("soilLayer", newLayers);
             }
             mapModified = true;
+        } else if (fun.equals("PTCALC()")) {
+//            HashMap soilData = MapUtil.getObjectOr(m, "soil", new HashMap());
+//            String appliedDomeFuns = MapUtil.getValueOr(soilData, "applied_dome_functions", "").toUpperCase();
+//            if (appliedDomeFuns.contains("PTCALC()")) {
+//                log.debug("Skip applying PTCALC since it has already been applied to this soil site data.");
+//                mapModified = true;
+//            } else {
+            if (newArgs.length < 2) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            }
+            ArrayList vars = new ArrayList();
+            for (int i = 1; i < newArgs.length; i++) {
+                vars.add(newArgs[i].toLowerCase());
+            }
+            calcResults = SoilHelper.getSoilValsFromOthPara(m, newArgs[0], vars);
+//                if (appliedDomeFuns.equals("")) {
+//                    appliedDomeFuns = "PTCALC()";
+//                } else {
+//                    appliedDomeFuns += "|PTCALC()";
+//                }
+//                soilData.put("applied_dome_functions", appliedDomeFuns);
+//            }
+//            mapModified = true;
         } else {
             log.error("DOME Function {} unsupported", fun);
             return;
@@ -397,9 +421,14 @@ public class Calculate extends Command {
                                 // Replace if only I have something for you.
                                 log.debug("Level 3, writing [{}] now", var);
                                 pointer.get(i).put(var, values.get(j));
-                                j++;
+                                if (isEvent) {
+                                    j++;
+                                }
                             }
                         }
+                    }
+                    if (!isEvent) {
+                        j++;
                     }
                 }
             } else {
