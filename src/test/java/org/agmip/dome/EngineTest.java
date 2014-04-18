@@ -1015,6 +1015,7 @@ public class EngineTest {
         AcePathfinderUtil.insertValue(testMap, "slbdm", "1.15");
         AcePathfinderUtil.insertValue(testMap, "sllb", "40");
         AcePathfinderUtil.insertValue(testMap, "slbdm", "1.16");
+        AcePathfinderUtil.insertValue(testMap, "sldul", "0.14");
         AcePathfinderUtil.insertValue(testMap, "sllb", "80");
         AcePathfinderUtil.insertValue(testMap, "slbdm", "1.21");
         AcePathfinderUtil.insertValue(testMap, "sllb", "110");
@@ -1043,6 +1044,32 @@ public class EngineTest {
         e.apply(testMap);
         log.debug("Modified map: {}", testMap.toString());
         
+        log.info("=== END TEST ===");
+    }
+
+    @Test
+    public void PTCALCTest() {
+        HashMap<String, Object> testMap = new HashMap<String, Object>();
+        AcePathfinderUtil.insertValue(testMap, "sllb", "30");
+        AcePathfinderUtil.insertValue(testMap, "slsnd", "20");
+        AcePathfinderUtil.insertValue(testMap, "slcly", "50");
+        AcePathfinderUtil.insertValue(testMap, "sloc", "2");
+        AcePathfinderUtil.insertValue(testMap, "slll", "0.1");
+        AcePathfinderUtil.insertValue(testMap, "sllb", "50");
+        AcePathfinderUtil.insertValue(testMap, "slsnd", "30");
+        AcePathfinderUtil.insertValue(testMap, "slcly", "40");
+        AcePathfinderUtil.insertValue(testMap, "sloc", "1");
+        AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
+        log.info("=== PTCALC() TEST ===");
+        log.debug("Starting map: {}", testMap);
+        createRule("FILL", "SLLB", "PTCALC()|PTSAXTON2006|ALL");
+        e.apply(testMap);
+        log.debug("Modified map 1: {}", testMap.toString());
+        
+        e = new Engine();
+        createRule("REPLACE", "SLLB", "PTCALC()|PTSAXTON2006|SLLL");
+        e.apply(testMap);
+        log.debug("Modified map 2: {}", testMap.toString());
         log.info("=== END TEST ===");
     }
     
