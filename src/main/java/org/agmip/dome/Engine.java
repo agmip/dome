@@ -4,7 +4,6 @@ import com.rits.cloning.Cloner;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import org.agmip.ace.AcePathfinder;
 import org.agmip.functions.ExperimentHelper;
 import org.agmip.util.MapUtil;
 import org.slf4j.Logger;
@@ -96,7 +95,7 @@ public class Engine {
      */
     public void apply(HashMap<String, Object> data) {
         for (HashMap<String, String> rule : rules) {
-            if (!isSWExtracted || !isSoilWthRules(rule)) {
+            if (!isSWExtracted || (!isSoilRules(rule) && !isWthRules(rule))) {
                 applyRule(data, rule);
             }
         }
@@ -563,32 +562,57 @@ public class Engine {
         return genList;
     }
 
-    public ArrayList<HashMap<String, String>> extractSoilWthRules() {
-        ArrayList<HashMap<String, String>> swRules;
+    public ArrayList<HashMap<String, String>> extractSoilRules() {
+        ArrayList<HashMap<String, String>> sRules;
         if (allowGenerators) {
-            swRules = new ArrayList<HashMap<String, String>>();
+            sRules = new ArrayList<HashMap<String, String>>();
             for (ArrayList<HashMap<String, String>> genGroup : genGroups) {
-                swRules.addAll(extractSoilWthRules(genGroup));
+                sRules.addAll(extractSoilRules(genGroup));
             }
         } else {
-            swRules = extractSoilWthRules(rules);
+            sRules = extractSoilRules(rules);
         }
         isSWExtracted = true;
 
-        return swRules;
+        return sRules;
     }
 
-    private ArrayList<HashMap<String, String>> extractSoilWthRules(ArrayList<HashMap<String, String>> rules) {
+    public ArrayList<HashMap<String, String>> extractWthRules() {
+        ArrayList<HashMap<String, String>> wRules;
+        if (allowGenerators) {
+            wRules = new ArrayList<HashMap<String, String>>();
+            for (ArrayList<HashMap<String, String>> genGroup : genGroups) {
+                wRules.addAll(extractWthRules(genGroup));
+            }
+        } else {
+            wRules = extractWthRules(rules);
+        }
+        isSWExtracted = true;
+
+        return wRules;
+    }
+
+    private ArrayList<HashMap<String, String>> extractSoilRules(ArrayList<HashMap<String, String>> rules) {
         ArrayList<HashMap<String, String>> swRules = new ArrayList<HashMap<String, String>>();
         for (HashMap<String, String> rule : rules) {
-            if (isSoilWthRules(rule)) {
+            if (isSoilRules(rule)) {
                 swRules.add(rule);
             }
         }
         return swRules;
     }
-    
-    private boolean isSoilWthRules(HashMap<String, String> rule) {
+
+    private ArrayList<HashMap<String, String>> extractWthRules(ArrayList<HashMap<String, String>> rules) {
+        ArrayList<HashMap<String, String>> swRules = new ArrayList<HashMap<String, String>>();
+        for (HashMap<String, String> rule : rules) {
+            if (isWthRules(rule)) {
+                swRules.add(rule);
+            }
+        }
+        return swRules;
+    }
+
+    private boolean isSoilRules(HashMap<String, String> rule) {
         boolean isSWRule = false;
         String cmd = rule.get("cmd").toUpperCase();
         String var = rule.get("variable");
@@ -620,18 +644,62 @@ public class Engine {
                 String path = Command.getPathOrRoot(var);
                 String[] paths = path.split(",");
                 for (String p : paths) {
-                    if (p.equals("soil") || p.equals("soil@soilLayer") || p.equals("weather") || p.equals("weather@dailyWeather")) {
+                    if (p.equals("soil") || p.equals("soil@soilLayer")) {
                         isSWRule = true;
                         break;
                     }
                 }
             } // If call function which might change soil/weather data
             else if (args[0].equals("STABLEC()")
-                    || args[0].equals("PTCALC()")
-                    || args[0].equals("TAVAMP()")) {
+                    || args[0].equals("PTCALC()")) {
                 isSWRule = true;
             }
         }
         return isSWRule;
+    }
+
+    private boolean isWthRules(HashMap<String, String> rule) {
+        boolean isWRule = false;
+        String cmd = rule.get("cmd").toUpperCase();
+        String var = rule.get("variable");
+
+        // NPE defender
+        if (var == null) {
+            log.error("Invalid rule: {}", rule.toString());
+            return isWRule;
+        }
+
+        String a = rule.get("args");
+        if (a == null) {
+            a = "";
+        }
+        String[] args = a.split("[|]");
+
+        if (cmd.equals("INFO")) {
+            log.debug("Recevied an INFO command");
+        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY")) {
+            // If it is simple calculation or set value directly to the soil/weather variable
+            if (!args[0].endsWith("()")
+                    || args[0].equals("OFFSET()")
+                    || args[0].equals("MULTIPLY()")
+                    || args[0].equals("OFFSET_DATE()")
+                    || args[0].equals("DATE_OFFSET()")
+                    || args[0].equals("ROOT_DIST()")
+                    || args[0].equals("LYRSET()")
+                    || args[0].equals("TRANSPOSE()")) {
+                String path = Command.getPathOrRoot(var);
+                String[] paths = path.split(",");
+                for (String p : paths) {
+                    if (p.equals("weather") || p.equals("weather@dailyWeather")) {
+                        isWRule = true;
+                        break;
+                    }
+                }
+            } // If call function which might change soil/weather data
+            else if (args[0].equals("TAVAMP()")) {
+                isWRule = true;
+            }
+        }
+        return isWRule;
     }
 }
