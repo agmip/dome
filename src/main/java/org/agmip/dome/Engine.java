@@ -32,6 +32,7 @@ public class Engine {
     /* A list of keys to extract from the resulting generated datasets. */
     HashSet<String> keysToExtractFinal = new HashSet<String>();
     private int cur = 0;
+    private String domeName;
 
     /**
      * Construct a new engine with the ruleset passed in.
@@ -48,6 +49,7 @@ public class Engine {
             this.genGroups = new ArrayList<ArrayList<HashMap<String, String>>>();
         }
         this.allowGenerators = allowGenerators;
+        this.domeName = DomeUtil.generateDomeName(dome);
     }
 
     /**
@@ -65,11 +67,12 @@ public class Engine {
      *
      * @param rules A DOME ruleset.
      */
-    public Engine(ArrayList<HashMap<String, String>> rules) {
+    public Engine(ArrayList<HashMap<String, String>> rules, String domeName) {
         this.rules = rules;
         this.generators = new ArrayList<HashMap<String, String>>();
         this.genGroups = new ArrayList<ArrayList<HashMap<String, String>>>();
         this.allowGenerators = false;
+        this.domeName = domeName;
     }
 
     protected Engine() {
@@ -77,6 +80,11 @@ public class Engine {
         this.generators = new ArrayList<HashMap<String, String>>();
         this.genGroups = new ArrayList<ArrayList<HashMap<String, String>>>();
         this.allowGenerators = false;
+        this.domeName = "";
+    }
+    
+    public String getDomeName() {
+        return this.domeName;
     }
 
     /**
