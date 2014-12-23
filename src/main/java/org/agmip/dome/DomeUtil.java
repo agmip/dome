@@ -26,13 +26,23 @@ public class DomeUtil {
             String rapId    = (info.get("rap_id") == null) ? "" : info.get("rap_id");
             String manId    = (info.get("man_id") == null) ? "" : info.get("man_id");
             String rapVer   = (info.get("rap_ver") == null) ? "" : info.get("rap_ver");
+            String climId   = info.get("clim_id");
             String desc     = (info.get("description") == null) ? "" : info.get("description");
 
-            String out = region+"-"+stratum+"-"+rapId+"-"+manId+"-"+rapVer+"-"+desc;
+            String out;
+            if (climId == null) {
+                out = region+"-"+stratum+"-"+rapId+"-"+manId+"-"+rapVer+"-"+desc;
+            } else {
+                out = region+"-"+stratum+"-"+rapId+"-"+manId+"-"+rapVer+"-"+climId+"-"+desc;
+            }
             return out.toUpperCase();
         } else {
             return "";
         }
+    }
+    
+    public static void updateMetaInfo(HashMap<String, Object> dome, String domeName) {
+        dome.put("info", unpackDomeName(domeName));
     }
 
     public static HashMap<String, String> unpackDomeName(String domeName) {
@@ -58,9 +68,18 @@ public class DomeUtil {
             info.put("man_id", parts[3]);
         if (! parts[4].equals(""))
             info.put("rap_ver", parts[4]);
-        if (parts.length == 6 && ! parts[5].equals(""))
-            info.put("description", parts[5]);
-
+        if (parts.length <= 6) {
+            if (! parts[5].equals("")) {
+                info.put("description", parts[5]);
+            }
+        } else {
+            if (parts[5] != null) {
+                info.put("clim_id", parts[5]);
+            }
+            if (! parts[6].equals("")) {
+                info.put("description", parts[6]);
+            }
+        }
         if (info.isEmpty()) {
             log.error("unpackDomeName() provided an invalid name: {}", domeName);
         }

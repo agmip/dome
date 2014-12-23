@@ -66,6 +66,7 @@ public class Engine {
      * Construct a new engine with the ruleset passed in.
      *
      * @param rules A DOME ruleset.
+     * @param domeName
      */
     public Engine(ArrayList<HashMap<String, String>> rules, String domeName) {
         this.rules = rules;
@@ -326,9 +327,9 @@ public class Engine {
             Cloner cloner = new Cloner();
             if (newEventArrs.isEmpty()) {
                 int i = 0;
-                for (HashMap<String, String> rules : gAcc) {
+                for (HashMap<String, String> grules : gAcc) {
                     i++;
-                    Generate.applyGeneratedRules(data, rules, "" + i);
+                    Generate.applyGeneratedRules(data, grules, "" + i);
                     HashMap newData = cloner.deepClone(data);
                     if (refLeftFlg) {
                         newData.putAll(tempRefHolder);
