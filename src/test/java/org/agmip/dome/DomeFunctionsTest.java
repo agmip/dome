@@ -253,4 +253,24 @@ public class DomeFunctionsTest {
 
         assertEquals("DOME PCTAWC() broken", testMap, DomeFunctions.getTavAndAmp(coreMap));
     }
+    
+    @Test
+    public void domeId() {
+        String domeID    = "MACHAKOS-1----BASELINE";
+        String newDomeID = "MACHAKOS-1----0XFX-BASELINE";
+        HashMap<String, Object> dome = new HashMap();
+        DomeUtil.updateMetaInfo(dome, domeID);
+        assertEquals(domeID, DomeUtil.generateDomeName(dome));
+        DomeUtil.updateMetaInfo(dome, newDomeID);
+        assertEquals(newDomeID, DomeUtil.generateDomeName(dome));
+        HashMap<String, Object> dome2 = new HashMap();
+        HashMap<String, String> info = new HashMap();
+        info.put("reg_id", "MACHAKOS");
+        info.put("stratum", "1");
+        info.put("clim_id", "0XFX");
+        info.put("description", "BASELINE");
+        dome2.put("info", info);
+        assertEquals(newDomeID, DomeUtil.generateDomeName(dome2));
+        
+    }
 }
