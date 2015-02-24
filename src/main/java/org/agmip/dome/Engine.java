@@ -650,12 +650,14 @@ public class Engine {
                     || args[0].equals("ROOT_DIST()")
                     || args[0].equals("LYRSET()")
                     || args[0].equals("TRANSPOSE()")) {
-                String path = Command.getPathOrRoot(var);
-                String[] paths = path.split(",");
-                for (String p : paths) {
-                    if (p.equals("soil") || p.equals("soil@soilLayer")) {
-                        isSWRule = true;
-                        break;
+                if (!var.equals("soil_id")) {
+                    String path = Command.getPathOrRoot(var);
+                    String[] paths = path.split(",");
+                    for (String p : paths) {
+                        if (p.equals("soil") || p.equals("soil@soilLayer")) {
+                            isSWRule = true;
+                            break;
+                        }
                     }
                 }
             } // If call function which might change soil/weather data
@@ -696,12 +698,14 @@ public class Engine {
                     || args[0].equals("ROOT_DIST()")
                     || args[0].equals("LYRSET()")
                     || args[0].equals("TRANSPOSE()")) {
-                String path = Command.getPathOrRoot(var);
-                String[] paths = path.split(",");
-                for (String p : paths) {
-                    if (p.equals("weather") || p.equals("weather@dailyWeather")) {
-                        isWRule = true;
-                        break;
+                if (!var.equals("wst_id") && !var.equals("clim_id")) {
+                    String path = Command.getPathOrRoot(var);
+                    String[] paths = path.split(",");
+                    for (String p : paths) {
+                        if (p.equals("weather") || p.equals("weather@dailyWeather")) {
+                            isWRule = true;
+                            break;
+                        }
                     }
                 }
             } // If call function which might change soil/weather data
