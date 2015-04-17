@@ -256,7 +256,7 @@ public class DomeFunctionsTest {
     
     @Test
     public void domeId() {
-        String domeID    = "MACHAKOS-1----BASELINE";
+        String domeID    = "MACHAKOS-1-----BASELINE";
         String newDomeID = "MACHAKOS-1----0XFX-BASELINE";
         HashMap<String, Object> dome = new HashMap();
         DomeUtil.updateMetaInfo(dome, domeID);

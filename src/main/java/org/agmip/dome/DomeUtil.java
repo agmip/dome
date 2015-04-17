@@ -28,10 +28,14 @@ public class DomeUtil {
             String rapVer   = (info.get("rap_ver") == null) ? "" : info.get("rap_ver");
             String climId   = info.get("clim_id");
             String desc     = (info.get("description") == null) ? "" : info.get("description");
+            if (desc.contains("-") && climId == null) {
+                climId = desc.substring(0, desc.indexOf("-"));
+                desc = desc.substring(desc.indexOf("-") + 1);
+            }
 
             String out;
             if (climId == null) {
-                out = region+"-"+stratum+"-"+rapId+"-"+manId+"-"+rapVer+"-"+desc;
+                out = region+"-"+stratum+"-"+rapId+"-"+manId+"-"+rapVer+"--"+desc;
             } else {
                 out = region+"-"+stratum+"-"+rapId+"-"+manId+"-"+rapVer+"-"+climId+"-"+desc;
             }
@@ -47,12 +51,12 @@ public class DomeUtil {
 
     public static HashMap<String, String> unpackDomeName(String domeName) {
         HashMap<String, String> info = new HashMap<String, String>();
-        String[] parts = domeName.toUpperCase().split("[\\-]", 6);
+        String[] parts = domeName.toUpperCase().split("[\\-]", 7);
         log.debug("Parts length: {}", parts.length);
         // for(int i=0; i < parts.length; i++) {
         //      log.debug(parts[i]);
         // }
-        if (parts.length != 6 && parts.length != 5) {
+        if (parts.length != 6 && parts.length != 5 && parts.length != 7) {
             log.error("unpackDomeName() provided an invalid name: {}", domeName);
             return new HashMap<String, String>();
         }
