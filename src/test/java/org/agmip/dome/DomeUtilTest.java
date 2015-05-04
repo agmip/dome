@@ -66,7 +66,7 @@ public class DomeUtilTest {
 
     @Test
     public void testGenerateDomeName() {
-        String test = "SAMPLE-99--81--";
+        String test = "SAMPLE-99--81---";
         assertEquals("incorrect name generated", test, DomeUtil.generateDomeName(dome));
     }
 
