@@ -334,6 +334,32 @@ public class Calculate extends Command {
 //                soilData.put("applied_dome_functions", appliedDomeFuns);
 //            }
 //            mapModified = true;
+        } else if (fun.equals("CTWN_FUN()")) {
+            if (newArgs.length < 1) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            } else if (newArgs.length > 6) {
+                log.warn("Too much arguments for {}", fun);
+            }
+            String[] newArgs2 = {"", "", "", "", "", ""};
+            for (int i = 0; i < newArgs.length; i++) {
+                newArgs2[i] = newArgs[i];
+            }
+            ExperimentHelper.setCTWNAdjustments(m, newArgs2[0], newArgs2[1], newArgs2[2], newArgs2[3], newArgs2[4], newArgs2[5]);
+            mapModified = true;
+        } else if (fun.equals("CLIM_CO2()")) {
+            if (newArgs.length < 1) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            } else if (newArgs.length > 2) {
+                log.warn("Too much arguments for {}", fun);
+            }
+            String[] newArgs2 = {"", "", "", "", "", newArgs[0]};
+            if (newArgs.length > 1) {
+                newArgs2[0] = newArgs[1];
+            }
+            ExperimentHelper.setCTWNAdjustments(m, newArgs2[0], newArgs2[1], newArgs2[2], newArgs2[3], newArgs2[4], newArgs2[5]);
+            mapModified = true;
         } else {
             log.error("DOME Function {} unsupported", fun);
             return;
