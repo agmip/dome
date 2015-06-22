@@ -110,7 +110,7 @@ public class Engine {
         }
     }
 
-    private void applyRule(HashMap<String, Object> data, HashMap<String, String> rule) {
+    protected void applyRule(HashMap<String, Object> data, HashMap<String, String> rule) {
         String cmd = rule.get("cmd").toUpperCase();
 
         // NPE defender
@@ -477,16 +477,6 @@ public class Engine {
 
                 // scan seasonal strategy dome, or overlay dome in overlay mode
                 if (isStgDome || (!isStgMode && val.startsWith("0"))) {
-                    if (wst_id.length() > 4) {
-                        wst_id = wst_id.substring(0, 4) + val;
-                    } else if (wst_id.length() > 0) {
-                        wst_id += val;
-                    }
-                    newRule = new HashMap();
-                    newRule.put("cmd", "REPLACE");
-                    newRule.put("args", wst_id);
-                    newRule.put("variable", "wst_id");
-                    applyRule(exp, newRule);
                     exp.remove("soil");
                     exp.remove("weather");
                     exp.put("clim_id", val);
@@ -505,9 +495,9 @@ public class Engine {
                 if (!cmd.equals("FILL")) {
                     rule.put("cmd", "REPLACE");
                 }
-                applyRule(exp, rule);
                 exp.remove("soil");
                 exp.remove("weather");
+                applyRule(exp, rule);
                 // Commented this statement to avoid destroy the updated linkage
                 if (!cmd.equals("FILL")) {
                     rule.put("cmd", "INFO");
@@ -601,7 +591,7 @@ public class Engine {
         return wRules;
     }
 
-    private ArrayList<HashMap<String, String>> extractSoilRules(ArrayList<HashMap<String, String>> rules) {
+    protected ArrayList<HashMap<String, String>> extractSoilRules(ArrayList<HashMap<String, String>> rules) {
         ArrayList<HashMap<String, String>> swRules = new ArrayList<HashMap<String, String>>();
         for (HashMap<String, String> rule : rules) {
             if (isSoilRules(rule)) {
@@ -611,7 +601,7 @@ public class Engine {
         return swRules;
     }
 
-    private ArrayList<HashMap<String, String>> extractWthRules(ArrayList<HashMap<String, String>> rules) {
+    protected ArrayList<HashMap<String, String>> extractWthRules(ArrayList<HashMap<String, String>> rules) {
         ArrayList<HashMap<String, String>> swRules = new ArrayList<HashMap<String, String>>();
         for (HashMap<String, String> rule : rules) {
             if (isWthRules(rule)) {
@@ -621,10 +611,10 @@ public class Engine {
         return swRules;
     }
 
-    private boolean isSoilRules(HashMap<String, String> rule) {
+    protected boolean isSoilRules(HashMap<String, String> rule) {
         boolean isSWRule = false;
         String cmd = rule.get("cmd").toUpperCase();
-        String var = rule.get("variable");
+        String var = rule.get("variable").toLowerCase();
 
         // NPE defender
         if (var == null) {
@@ -669,10 +659,10 @@ public class Engine {
         return isSWRule;
     }
 
-    private boolean isWthRules(HashMap<String, String> rule) {
+    protected boolean isWthRules(HashMap<String, String> rule) {
         boolean isWRule = false;
         String cmd = rule.get("cmd").toUpperCase();
-        String var = rule.get("variable");
+        String var = rule.get("variable").toLowerCase();
 
         // NPE defender
         if (var == null) {

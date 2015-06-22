@@ -1,7 +1,10 @@
 package org.agmip.dome;
 
+import com.rits.cloning.Cloner;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import org.agmip.util.MapUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,6 +150,96 @@ public class DomeUtil {
         }
     }
 
+    public static ArrayList<HashMap<String, Object>> getBatchGroup(HashMap<String, Object> dome) {
+        if(dome.containsKey("batch_group")) {
+            try {
+                ArrayList<HashMap<String, Object>> group = (ArrayList<HashMap<String, Object>>) dome.get("batch_group");
+                if (group == null) {
+                    return new ArrayList<HashMap<String, Object>>();
+                }
+                return group;
+            } catch (Exception ex) {
+                // Could not convert
+                log.error("getBatchGroup() could not retreive the batch DOME group from {}", dome.toString());
+                return new ArrayList<HashMap<String, Object>>();
+            }
+        } else {
+            log.error("getBatchGroup() could not retreive the batch DOME group from {}", dome.toString());
+            return new ArrayList<HashMap<String, Object>>();
+        }
+    }
+
+    public static ArrayList<HashMap<String, Object>> getBatchRuns(HashMap<String, Object> dome) {
+        if(dome.containsKey("batch_runs")) {
+            try {
+                ArrayList<HashMap<String, Object>> group = (ArrayList<HashMap<String, Object>>) dome.get("batch_runs");
+                if (group == null) {
+                    return new ArrayList<HashMap<String, Object>>();
+                }
+                return group;
+            } catch (Exception ex) {
+                // Could not convert
+                log.error("getBatchGroup() could not retreive the batch runs from {}", dome.toString());
+                return new ArrayList<HashMap<String, Object>>();
+            }
+        } else {
+            log.error("getBatchGroup() could not retreive the batch runs from {}", dome.toString());
+            return new ArrayList<HashMap<String, Object>>();
+        }
+    }
+    
+    public static void insertAdjustment(HashMap<String, Object> data, HashMap<String, String> rule) {
+        
+        // Read the DOME rule
+        String a = rule.get("args");
+        if (a == null) {
+            a = "";
+        }
+        String[] args = a.split("[|]");
+        String var = rule.get("variable").toLowerCase();
+        
+        // Get adjust method
+        String method;
+        String value;
+        if (!args[0].endsWith("()")) {
+            method = "substitute";
+            value = args[0];
+        } else {
+            if (args.length < 2) {
+                log.warn("Arguments for Method [" + args[0] + "] is not enough to create an adjustment, this rule will be ignored");
+                return;
+            } else if (!args[1].equals("$" + var)) {
+                log.warn("The first arguments for Method [" + args[0] + "] has to be the original variable in the batch DOME to create an adjustment, this rule will be ignored");
+                return;
+            }if (args[0].equals("OFFSET()")) {
+                method = "delta";
+                value = args[2];
+            } else if (args[0].equals("MULTIPLY()")) {
+                method = "multiply";
+                value = args[2];
+            } else {
+                log.warn("Unsupported method [" + args[0] + "] found in the adjustment insertion process, this rule will be ignored");
+                return;
+            }
+        }
+        
+        // Create Adjustment
+        HashMap<String, String> adj = new HashMap();
+        adj.put("variable", var);
+        adj.put("method", method);
+        adj.put("value", value);
+
+        // Insert Agjustment
+        ArrayList adjs;
+        if (data.containsKey("adjustments")) {
+            adjs = (ArrayList) data.get("adjustments");
+        } else {
+            adjs = new ArrayList();
+            data.put("adjustments", adjs);
+        }
+        adjs.add(adj);
+    } 
+
     public static boolean hasGenerators(HashMap<String, Object> dome) {
         if (dome.containsKey("generators")) {
             ArrayList<HashMap<String, String>> rules = (ArrayList<HashMap<String, String>>) dome.get("generators");
@@ -161,5 +254,75 @@ public class DomeUtil {
         } else {
             return false;
         }
+    }
+    
+    public static HashSet<String> getSWIdsSet(ArrayList<HashMap<String, Object>> arr, String... idKeys) {
+        HashSet<String> ret = new HashSet();
+        for (HashMap data : arr) {
+            StringBuilder sb = new StringBuilder();
+            for (String idKey : idKeys) {
+                sb.append(MapUtil.getValueOr(data, idKey, ""));
+            }
+            ret.add(sb.toString());
+        }
+        return ret;
+    }
+
+    public static void replicateSoil(HashMap entry, HashSet soilIds, ArrayList<HashMap<String, Object>> soils) {
+        String newSoilId = MapUtil.getValueOr(entry, "soil_id", "");
+        HashMap data = MapUtil.getObjectOr(entry, "soil", new HashMap());
+        if (data.isEmpty()) {
+            return;
+        }
+        Cloner cloner = new Cloner();
+        HashMap newData = cloner.deepClone(data);
+//        ArrayList<HashMap<String, Object>> soils = MapUtil.getRawPackageContents(source, "soils");
+        int count = 1;
+        while (soilIds.contains(newSoilId + "_" + count)) {
+            count++;
+        }
+        newSoilId += "_" + count;
+        newData.put("soil_id", newSoilId);
+        entry.put("soil_id", newSoilId);
+        entry.put("soil", newData);
+        soilIds.add(newSoilId);
+        soils.add(newData);
+    }
+
+    public static void replicateWth(HashMap entry, HashSet wthIds, ArrayList<HashMap<String, Object>> wths) {
+        String newWthId = MapUtil.getValueOr(entry, "wst_id", "");
+        String climId = MapUtil.getValueOr(entry, "clim_id", "");
+        HashMap data = MapUtil.getObjectOr(entry, "weather", new HashMap());
+        if (data.isEmpty()) {
+            return;
+        }
+        Cloner cloner = new Cloner();
+        HashMap newData = cloner.deepClone(data);
+//        ArrayList<HashMap<String, Object>> wths = MapUtil.getRawPackageContents(source, "weathers");
+        String inst;
+        if (newWthId.length() > 1) {
+            inst = newWthId.substring(0, 2);
+        } else {
+            inst = newWthId + "0";
+        }
+        newWthId = inst + "01" + climId;
+        int count = 1;
+        while (wthIds.contains(newWthId) && count < 99) {
+            count++;
+            newWthId = String.format("%s%02d%s", inst, count, climId);
+        }
+        if (count == 99 && wthIds.contains(newWthId)) {
+            inst = inst.substring(0, 1);
+            newWthId = inst + "100" + climId;
+            while (wthIds.contains(newWthId)) {
+                count++;
+                newWthId = String.format("%s%03d%s", inst, count, climId);
+            }
+        }
+        newData.put("wst_id", newWthId);
+        entry.put("wst_id", newWthId);
+        entry.put("weather", newData);
+        wthIds.add(newWthId);
+        wths.add(newData);
     }
 }
