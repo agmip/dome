@@ -281,6 +281,14 @@ public class Calculate extends Command {
             } else if (path.contains("initial_conditions")) {
                 isICLayers = true;
             }
+            int topLyrNum = 2;
+            String[] lyrThk = {"10", "10"};
+            if (newArgs.length > topLyrNum) {
+                log.warn("Too many top layer thickness for {}, will only apply first {} layer thickness", fun, topLyrNum);
+            }
+            for (int i = 0; i < lyrThk.length && i < newArgs.length; i++) {
+                lyrThk[i] = newArgs[i];
+            }
             HashMap soilData;
             if (!isICLayers) {
                 soilData = MapUtil.getObjectOr(m, "soil", new HashMap());
@@ -302,7 +310,7 @@ public class Calculate extends Command {
             if (newArgs.length != 0) {
                 log.warn("Too many arguments for {}", fun);
             }
-            ArrayList<HashMap<String, String>> newLayers = SoilHelper.splittingSoillayer(m, isICLayers);
+            ArrayList<HashMap<String, String>> newLayers = SoilHelper.splittingSoillayer(m, isICLayers, lyrThk[0], lyrThk[1]);
             ArrayList<HashMap<String, String>> layers = new MapUtil.BucketEntry(soilData).getDataList();
             if (newLayers.size() > layers.size()) {
 //                    layers.clear();
