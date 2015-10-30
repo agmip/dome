@@ -963,10 +963,11 @@ public class EngineTest {
         AcePathfinderUtil.insertValue(testMap, "pdate", "19820312");
         log.info("=== LYRSET() TEST ===");
         log.debug("Starting map: {}", testMap);
-        createRule("REPLACE", "SLLB", "LYRSET()|123");
+        createRule("REPLACE", "SLLB", "LYRSET()|5|10");
         createRule("FILL", "ICBL", "LYRSET()");
         e.apply(testMap);
         log.debug("Modified map: {}", testMap.toString());
+        log.info("Modified soil: {}", MapUtil.getBucket(testMap, "soil").getDataList());
         assertEquals("LYRSET(): expected layer size is 12", 12, MapUtil.getBucket(testMap, "soil").getDataList().size());
         log.info("=== END TEST ===");
     }
