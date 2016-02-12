@@ -107,6 +107,7 @@ public class BatchEngine {
         
         if (hasNext()) {
             HashMap<String, Object> batch = batchGroup.get(curIdx);
+            curIdx++;
             ArrayList<HashMap<String, Object>> runs = DomeUtil.getBatchRuns(batch);
             ArrayList<HashMap<String, Object>> flattenedData = MapUtil.flatPack(source);
             ArrayList<HashMap<String, Object>> newExps = new ArrayList();
@@ -226,7 +227,7 @@ public class BatchEngine {
             exp.clear();
             exp.addAll(newExps);
 
-            curIdx++;
+//            curIdx++;
         } else {
             // TODO
         }
