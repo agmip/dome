@@ -484,9 +484,10 @@ public class Engine {
 
         boolean isClimIDchanged = false;
         for (HashMap<String, String> rule : rules) {
-            if (isSkippedRule(rule)) {
-                continue;
-            }
+//            if (isSkippedRule(rule)) {
+//                continue;
+//            }
+            boolean isSkippedRule = isSkippedRule(rule);
             String var = MapUtil.getValueOr(rule, "variable", "").toLowerCase();
             String cmd = MapUtil.getValueOr(rule, "cmd", "").toUpperCase();
             if (var.equals("clim_id")) {
@@ -498,14 +499,14 @@ public class Engine {
                 }
 
                 // scan seasonal strategy dome, or overlay dome in overlay mode
-                if (isStgDome || (!isStgMode && val.startsWith("0"))) {
+                if (!isSkippedRule && (isStgDome || (!isStgMode && val.startsWith("0")))) {
                     exp.remove("soil");
                     exp.remove("weather");
                     exp.put("clim_id", val);
                     isClimIDchanged = true;
                 }
 
-                if (!isStgMode && !val.startsWith("0")) {
+                if (!isSkippedRule && !isStgMode && !val.startsWith("0")) {
                     log.warn("Invalid CLIM_ID assigned for baseline weather data: {}", val);
                 }
 
@@ -514,12 +515,14 @@ public class Engine {
                     rule.put("cmd", "INFO");
                 }
             } else if (var.equals("wst_id") || var.equals("soil_id")) {
-                if (!cmd.equals("FILL")) {
-                    rule.put("cmd", "REPLACE");
+                if (!isSkippedRule) {
+                    if (!cmd.equals("FILL")) {
+                        rule.put("cmd", "REPLACE");
+                    }
+                    exp.remove("soil");
+                    exp.remove("weather");
+                    applyRule(exp, rule);
                 }
-                exp.remove("soil");
-                exp.remove("weather");
-                applyRule(exp, rule);
                 // Commented this statement to avoid destroy the updated linkage
                 if (!cmd.equals("FILL")) {
                     rule.put("cmd", "INFO");
