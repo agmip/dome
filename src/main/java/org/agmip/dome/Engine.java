@@ -31,6 +31,7 @@ public class Engine {
     private ArrayList<HashMap<String, String>> genRules = null;
     /* A list of keys to extract from the resulting generated datasets. */
     HashSet<String> keysToExtractFinal = new HashSet<String>();
+    HashSet<String> skipVarList = new HashSet();
     private int cur = 0;
     private String domeName;
 
@@ -51,6 +52,11 @@ public class Engine {
         this.allowGenerators = allowGenerators;
         this.domeName = DomeUtil.generateDomeName(dome);
     }
+    
+    public Engine(HashMap<String, Object> dome, boolean allowGenerators, ArrayList<String> skipVarList) {
+        this(dome, allowGenerators);
+        this.skipVarList.addAll(skipVarList);
+    }
 
     /**
      * Construct a new engine with the ruleset passed in. Generators are
@@ -60,6 +66,11 @@ public class Engine {
      */
     public Engine(HashMap<String, Object> dome) {
         this(dome, false);
+    }
+
+    public Engine(HashMap<String, Object> dome, ArrayList<String> skipVarList) {
+        this(dome, false);
+        this.skipVarList.addAll(skipVarList);
     }
 
     /**
@@ -74,6 +85,11 @@ public class Engine {
         this.genGroups = new ArrayList<ArrayList<HashMap<String, String>>>();
         this.allowGenerators = false;
         this.domeName = domeName;
+    }
+    
+    public Engine(ArrayList<HashMap<String, String>> rules, String domeName, ArrayList<String> skipVarList) {
+        this(rules, domeName);
+        this.skipVarList.addAll(skipVarList);
     }
 
     protected Engine() {
@@ -111,6 +127,9 @@ public class Engine {
     }
 
     protected void applyRule(HashMap<String, Object> data, HashMap<String, String> rule) {
+        if (isSkippedRule(rule)) {
+            return;
+        }
         String cmd = rule.get("cmd").toUpperCase();
 
         // NPE defender
@@ -462,9 +481,13 @@ public class Engine {
     }
 
     public boolean updateWSRef(HashMap<String, Object> exp, boolean isStgDome, boolean isStgMode) {
-        HashMap newRule;
+
         boolean isClimIDchanged = false;
         for (HashMap<String, String> rule : rules) {
+//            if (isSkippedRule(rule)) {
+//                continue;
+//            }
+            boolean isSkippedRule = isSkippedRule(rule);
             String var = MapUtil.getValueOr(rule, "variable", "").toLowerCase();
             String cmd = MapUtil.getValueOr(rule, "cmd", "").toUpperCase();
             if (var.equals("clim_id")) {
@@ -476,14 +499,14 @@ public class Engine {
                 }
 
                 // scan seasonal strategy dome, or overlay dome in overlay mode
-                if (isStgDome || (!isStgMode && val.startsWith("0"))) {
+                if (!isSkippedRule && (isStgDome || (!isStgMode && val.startsWith("0")))) {
                     exp.remove("soil");
                     exp.remove("weather");
                     exp.put("clim_id", val);
                     isClimIDchanged = true;
                 }
 
-                if (!isStgMode && !val.startsWith("0")) {
+                if (!isSkippedRule && !isStgMode && !val.startsWith("0")) {
                     log.warn("Invalid CLIM_ID assigned for baseline weather data: {}", val);
                 }
 
@@ -492,12 +515,14 @@ public class Engine {
                     rule.put("cmd", "INFO");
                 }
             } else if (var.equals("wst_id") || var.equals("soil_id")) {
-                if (!cmd.equals("FILL")) {
-                    rule.put("cmd", "REPLACE");
+                if (!isSkippedRule) {
+                    if (!cmd.equals("FILL")) {
+                        rule.put("cmd", "REPLACE");
+                    }
+                    exp.remove("soil");
+                    exp.remove("weather");
+                    applyRule(exp, rule);
                 }
-                exp.remove("soil");
-                exp.remove("weather");
-                applyRule(exp, rule);
                 // Commented this statement to avoid destroy the updated linkage
                 if (!cmd.equals("FILL")) {
                     rule.put("cmd", "INFO");
@@ -704,5 +729,42 @@ public class Engine {
             }
         }
         return isWRule;
+    }
+    
+    protected ArrayList<String> modifiedVarList(ArrayList<HashMap<String, String>> rules) {
+        ArrayList<String> ret = new ArrayList<String>();
+        for (HashMap<String, String> rule : rules) {
+            String var = rule.get("variable").toLowerCase();
+            String cmd = rule.get("cmd").toUpperCase();
+            if (!cmd.equals("INFO") || var.equals("wst_id") || var.equals("clim_id")) {
+                ret.add(var);
+            }
+        }
+        return ret;
+    }
+
+    public ArrayList<String> modifiedVarList() {
+        ArrayList<String> ret;
+        if (allowGenerators) {
+            ret  = new ArrayList<String>();
+            for (ArrayList<HashMap<String, String>> genGroup : genGroups) {
+                ret.addAll(modifiedVarList(genGroup));
+            }
+        } else {
+            ret = modifiedVarList(rules);
+        }
+        isSWExtracted = true;
+
+        return ret;
+    }
+    
+    protected boolean isSkippedRule(HashMap<String, String> rule) {
+        String var = rule.get("variable");
+        if (var == null) {
+            return true;
+        } else {
+            var = var.toLowerCase();
+        }
+        return skipVarList.contains(var);
     }
 }

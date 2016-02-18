@@ -29,7 +29,7 @@ public class BatchEngine {
     HashSet<String> keysToExtractFinal = new HashSet<String>();
 //    private int cur = 0;
     private final String domeName;
-    private int curIdx = 0;
+    private int nextIdx = 0;
 
     /**
      * Construct a new engine with the ruleset passed in.
@@ -79,23 +79,35 @@ public class BatchEngine {
     }
     
     public boolean hasNext() {
-        return curIdx < batchGroup.size();
+        return nextIdx < batchGroup.size();
     }
     
     public String getCurGroupId() {
-        if (curIdx < batchGroup.size()) {
-            return MapUtil.getValueOr(batchGroup.get(curIdx), "group_id", "");
+        if (nextIdx - 1 > -1 && nextIdx - 1 < batchGroup.size()) {
+            return MapUtil.getValueOr(batchGroup.get(nextIdx - 1), "group_id", "");
+        } else {
+            return "";
+        }
+    }
+
+    public String getNextGroupId() {
+        if (nextIdx > -1 && nextIdx < batchGroup.size()) {
+            return MapUtil.getValueOr(batchGroup.get(nextIdx), "group_id", "");
         } else {
             return "";
         }
     }
     
-    public String getLastGroupId() {
-        if (curIdx > 0 && curIdx - 1 < batchGroup.size()) {
-            return MapUtil.getValueOr(batchGroup.get(curIdx - 1), "group_id", "");
-        } else {
-            return "";
-        }
+    public ArrayList<HashMap<String, Object>> getNextBatchRun() {
+        HashMap<String, Object> batch = batchGroup.get(nextIdx);
+        ArrayList<HashMap<String, Object>> run = DomeUtil.getBatchRuns(batch);
+        nextIdx++;
+        return run;
+    }
+    
+    protected ArrayList<HashMap<String, Object>> getCurrentBatchRun() {
+        HashMap<String, Object> batch = batchGroup.get(nextIdx - 1);
+        return DomeUtil.getBatchRuns(batch);
     }
 
     /**
@@ -106,8 +118,7 @@ public class BatchEngine {
     public void applyNext(HashMap<String, Object> source) {
         
         if (hasNext()) {
-            HashMap<String, Object> batch = batchGroup.get(curIdx);
-            ArrayList<HashMap<String, Object>> runs = DomeUtil.getBatchRuns(batch);
+            ArrayList<HashMap<String, Object>> runs = getNextBatchRun();
             ArrayList<HashMap<String, Object>> flattenedData = MapUtil.flatPack(source);
             ArrayList<HashMap<String, Object>> newExps = new ArrayList();
             ArrayList<HashMap> soilDataArr = new ArrayList();
@@ -155,7 +166,7 @@ public class BatchEngine {
                     HashMap<String, ArrayList<HashMap<String, String>>> lastAppliedSoilDomes = soilDomeMap.get(soilId);
                     if (lastAppliedSoilDomes == null) {
                         soilDataArr.add(entry);
-                        soilEngines.add(new Engine(sRules, this.domeName + "-b" + batch.get("group_id") + "-" + runNum));
+                        soilEngines.add(new Engine(sRules, this.domeName + "-b" + getCurGroupId() + "-" + runNum));
                         lastAppliedSoilDomes = new HashMap();
                         lastAppliedSoilDomes.put(runNum, sRules);
                         soilDomeMap.put(soilId, lastAppliedSoilDomes);
@@ -170,7 +181,7 @@ public class BatchEngine {
                         if (!isSameRules) {
                             DomeUtil.replicateSoil(entry, soilIds, MapUtil.getRawPackageContents(source, "soils"));
                             soilDataArr.add(entry);
-                            soilEngines.add(new Engine(sRules, this.domeName + "-b" + batch.get("group_id") + "-" + runNum));
+                            soilEngines.add(new Engine(sRules, this.domeName + "-b" + getCurGroupId() + "-" + runNum));
                             lastAppliedSoilDomes.put(runNum, sRules);
                         }
                     }
@@ -180,7 +191,7 @@ public class BatchEngine {
                     HashMap<String, ArrayList<HashMap<String, String>>> lastAppliedWthDomes = wthDomeMap.get(wstId+climId);
                     if (lastAppliedWthDomes == null) {
                         wthDataArr.add(entry);
-                        wthEngines.add(new Engine(wRules, this.domeName + "-b" + batch.get("group_id") + "-" + runNum));
+                        wthEngines.add(new Engine(wRules, this.domeName + "-b" + getCurGroupId() + "-" + runNum));
                         lastAppliedWthDomes = new HashMap();
                         lastAppliedWthDomes.put(runNum, wRules);
                         wthDomeMap.put(wstId+climId, lastAppliedWthDomes);
@@ -195,7 +206,7 @@ public class BatchEngine {
                         if (!isSameRules) {
                             DomeUtil.replicateWth(entry, wstIds, MapUtil.getRawPackageContents(source, "weathers"));
                             wthDataArr.add(entry);
-                            wthEngines.add(new Engine(wRules, this.domeName + "-b" + batch.get("group_id") + "-" + runNum));
+                            wthEngines.add(new Engine(wRules, this.domeName + "-b" + getCurGroupId() + "-" + runNum));
                             lastAppliedWthDomes.put(runNum, wRules);
                         }
                     }
@@ -226,7 +237,7 @@ public class BatchEngine {
             exp.clear();
             exp.addAll(newExps);
 
-            curIdx++;
+//            curIdx++;
         } else {
             // TODO
         }
@@ -256,12 +267,21 @@ public class BatchEngine {
                     entry.put("weather", wthData);
                     break;
                 }
-                
+
             }
         }
-        
+
     }
-    
+
+    public ArrayList<String> currentModifiedVarList() {
+        ArrayList<String> ret = new ArrayList<String>();
+        ArrayList<HashMap<String, Object>> runs = getCurrentBatchRun();
+        for (HashMap<String, Object> run : runs) {
+            ret.addAll((new Engine(run)).modifiedVarList());
+        }
+        return ret;
+    }
+
     protected class BatchRunEngine extends Engine {
         
         public BatchRunEngine(HashMap<String, Object> run) {
