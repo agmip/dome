@@ -238,7 +238,7 @@ public class DomeUtil {
             data.put("adjustments", adjs);
         }
         adjs.add(adj);
-    } 
+    }
 
     public static boolean hasGenerators(HashMap<String, Object> dome) {
         if (dome.containsKey("generators")) {
@@ -246,11 +246,7 @@ public class DomeUtil {
                 if (rules == null) {
                     return false;
                 }
-                if (rules.size() == 0) {
-                    return false;
-                } else {
-                    return true;
-                }
+            return !rules.isEmpty();
         } else {
             return false;
         }
