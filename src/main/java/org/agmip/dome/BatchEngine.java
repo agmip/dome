@@ -317,7 +317,7 @@ public class BatchEngine {
 
             if (cmd.equals("INFO")) {
                 log.debug("Recevied an INFO command");
-            } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY")) {
+            } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY") || cmd.equals("REPLACE_STRATEGY_ONLY")) {
                 // If it is simple calculation or set value directly to the soil/weather variable
                 if (!args[0].endsWith("()")
                         || args[0].equals("OFFSET()")
