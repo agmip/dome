@@ -146,7 +146,7 @@ public class Engine {
 
         if (cmd.equals("INFO")) {
             log.debug("Recevied an INFO command");
-        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY")) {
+        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY") || cmd.equals("REPLACE_STRATEGY_ONLY")) {
             boolean replace = true;
             if (cmd.equals("FILL")) {
                 replace = false;
@@ -160,6 +160,14 @@ public class Engine {
                         log.debug("Found data without seasonal_dome_applied set.");
                         Calculate.run(data, rule.get("variable"), args, replace);
                     }
+                } else if (cmd.equals("REPLACE_STRATEGY_ONLY")) {
+                    log.debug("Found STRATEGY_ONLY replace");
+                    if (!data.containsKey("seasonal_dome_applied")) {
+                        log.info("Replace for {} not applied due to STRATEGY_ONLY restriction", rule.get("variable"));
+                    } else {
+                        log.debug("Found data with seasonal_dome_applied set.");
+                        Calculate.run(data, rule.get("variable"), args, replace);
+                    }
                 } else {
                     Calculate.run(data, rule.get("variable"), args, replace);
                 }
@@ -170,6 +178,14 @@ public class Engine {
                         log.info("Replace for {} not applied due to FIELD_ONLY restriction", rule.get("variable"));
                     } else {
                         log.debug("Found data without seasonal_dome_applied set.");
+                        Assume.run(data, rule.get("variable"), args, replace);
+                    }
+                } else if (cmd.equals("REPLACE_STRATEGY_ONLY")) {
+                    log.debug("Found STRATEGY_ONLY replace");
+                    if (!data.containsKey("seasonal_dome_applied")) {
+                        log.info("Replace for {} not applied due to STRATEGY_ONLY restriction", rule.get("variable"));
+                    } else {
+                        log.debug("Found data with seasonal_dome_applied set.");
                         Assume.run(data, rule.get("variable"), args, replace);
                     }
                 } else {
@@ -655,7 +671,7 @@ public class Engine {
 
         if (cmd.equals("INFO")) {
             log.debug("Recevied an INFO command");
-        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY")) {
+        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY") || cmd.equals("REPLACE_STRATEGY_ONLY")) {
             // If it is simple calculation or set value directly to the soil/weather variable
             if (!args[0].endsWith("()")
                     || args[0].equals("OFFSET()")
@@ -703,7 +719,7 @@ public class Engine {
 
         if (cmd.equals("INFO")) {
             log.debug("Recevied an INFO command");
-        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY")) {
+        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY") || cmd.equals("REPLACE_STRATEGY_ONLY")) {
             // If it is simple calculation or set value directly to the soil/weather variable
             if (!args[0].endsWith("()")
                     || args[0].equals("OFFSET()")
