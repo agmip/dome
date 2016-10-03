@@ -342,6 +342,30 @@ public class Calculate extends Command {
 //                soilData.put("applied_dome_functions", appliedDomeFuns);
 //            }
 //            mapModified = true;
+        } else if (fun.equals("SHIFT_EVENTS()")) {
+            if (newArgs.length < 2) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            } else if (newArgs.length > 2) {
+                log.warn("Too much arguments for {}", fun);
+            }
+            String shiftType = newArgs[0];
+            String days;
+            if ("ABSOLUTE".equalsIgnoreCase(shiftType)) {
+                String pdate = ExperimentHelper.getFstPdate(m, "");
+                if (pdate.equals("")) {
+                    log.error("Can not find original PDATE for {}", fun);
+                    return;
+                }
+                days = Functions.calcDAP(newArgs[1], pdate);
+            } else if ("RELATIVE".equalsIgnoreCase(shiftType)) {
+                days = newArgs[1];
+            } else {
+                log.error("Unrecognized shift type for {}", fun);
+                return;
+            }
+            ExperimentHelper.shiftEvents(m, days);
+            mapModified = true;
         } else if (fun.equals("CTWN_FUN()")) {
             if (newArgs.length < 1) {
                 log.error("Not enough arguments for {}", fun);
