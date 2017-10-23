@@ -392,6 +392,15 @@ public class Calculate extends Command {
             }
             ExperimentHelper.setCTWNAdjustments(m, newArgs2[0], newArgs2[1], newArgs2[2], newArgs2[3], newArgs2[4], newArgs2[5]);
             mapModified = true;
+        } else if (fun.equals("REDUCEWP()")) {
+            if (newArgs.length < 1) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            } else if (newArgs.length > 2) {
+                log.warn("Too much arguments for {}", fun);
+            }
+            calcResults = SoilHelper.reduceWP(m, newArgs[0]);
+            mapModified = false;
         } else {
             log.error("DOME Function {} unsupported", fun);
             return;
