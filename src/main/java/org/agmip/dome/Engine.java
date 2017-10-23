@@ -680,7 +680,8 @@ public class Engine {
                     || args[0].equals("DATE_OFFSET()")
                     || args[0].equals("ROOT_DIST()")
                     || args[0].equals("LYRSET()")
-                    || args[0].equals("TRANSPOSE()")) {
+                    || args[0].equals("TRANSPOSE()")
+                    || args[0].equals("REDUCEWP()")) {
                 if (!var.equals("soil_id")) {
                     String path = Command.getPathOrRoot(var);
                     String[] paths = path.split(",");
@@ -728,7 +729,8 @@ public class Engine {
                     || args[0].equals("DATE_OFFSET()")
                     || args[0].equals("ROOT_DIST()")
                     || args[0].equals("LYRSET()")
-                    || args[0].equals("TRANSPOSE()")) {
+                    || args[0].equals("TRANSPOSE()")
+                    || args[0].equals("REDUCEWP()")) {
                 if (!var.equals("wst_id") && !var.equals("clim_id")) {
                     String path = Command.getPathOrRoot(var);
                     String[] paths = path.split(",");

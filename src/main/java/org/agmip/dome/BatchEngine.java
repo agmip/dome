@@ -326,7 +326,8 @@ public class BatchEngine {
                         || args[0].equals("DATE_OFFSET()")
                         || args[0].equals("ROOT_DIST()")
                         || args[0].equals("LYRSET()")
-                        || args[0].equals("TRANSPOSE()")) {
+                        || args[0].equals("TRANSPOSE()")
+                        || args[0].equals("REDUCEWP()")) {
                     if (!var.equals("wst_id") && !var.equals("clim_id") && !isAdjWthRule(rule)) { // Add isAdjWthRule for Batch
                         String path = Command.getPathOrRoot(var);
                         String[] paths = path.split(",");
