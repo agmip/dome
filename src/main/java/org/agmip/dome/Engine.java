@@ -31,6 +31,7 @@ public class Engine {
     private ArrayList<HashMap<String, String>> genRules = null;
     /* A list of keys to extract from the resulting generated datasets. */
     HashSet<String> keysToExtractFinal = new HashSet<String>();
+    HashSet<String> skipVarList = new HashSet();
     private int cur = 0;
     private String domeName;
 
@@ -51,6 +52,11 @@ public class Engine {
         this.allowGenerators = allowGenerators;
         this.domeName = DomeUtil.generateDomeName(dome);
     }
+    
+    public Engine(HashMap<String, Object> dome, boolean allowGenerators, ArrayList<String> skipVarList) {
+        this(dome, allowGenerators);
+        this.skipVarList.addAll(skipVarList);
+    }
 
     /**
      * Construct a new engine with the ruleset passed in. Generators are
@@ -60,6 +66,11 @@ public class Engine {
      */
     public Engine(HashMap<String, Object> dome) {
         this(dome, false);
+    }
+
+    public Engine(HashMap<String, Object> dome, ArrayList<String> skipVarList) {
+        this(dome, false);
+        this.skipVarList.addAll(skipVarList);
     }
 
     /**
@@ -74,6 +85,11 @@ public class Engine {
         this.genGroups = new ArrayList<ArrayList<HashMap<String, String>>>();
         this.allowGenerators = false;
         this.domeName = domeName;
+    }
+    
+    public Engine(ArrayList<HashMap<String, String>> rules, String domeName, ArrayList<String> skipVarList) {
+        this(rules, domeName);
+        this.skipVarList.addAll(skipVarList);
     }
 
     protected Engine() {
@@ -110,7 +126,10 @@ public class Engine {
         }
     }
 
-    private void applyRule(HashMap<String, Object> data, HashMap<String, String> rule) {
+    protected void applyRule(HashMap<String, Object> data, HashMap<String, String> rule) {
+        if (isSkippedRule(rule)) {
+            return;
+        }
         String cmd = rule.get("cmd").toUpperCase();
 
         // NPE defender
@@ -127,7 +146,7 @@ public class Engine {
 
         if (cmd.equals("INFO")) {
             log.debug("Recevied an INFO command");
-        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY")) {
+        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY") || cmd.equals("REPLACE_STRATEGY_ONLY")) {
             boolean replace = true;
             if (cmd.equals("FILL")) {
                 replace = false;
@@ -141,6 +160,14 @@ public class Engine {
                         log.debug("Found data without seasonal_dome_applied set.");
                         Calculate.run(data, rule.get("variable"), args, replace);
                     }
+                } else if (cmd.equals("REPLACE_STRATEGY_ONLY")) {
+                    log.debug("Found STRATEGY_ONLY replace");
+                    if (!data.containsKey("seasonal_dome_applied")) {
+                        log.info("Replace for {} not applied due to STRATEGY_ONLY restriction", rule.get("variable"));
+                    } else {
+                        log.debug("Found data with seasonal_dome_applied set.");
+                        Calculate.run(data, rule.get("variable"), args, replace);
+                    }
                 } else {
                     Calculate.run(data, rule.get("variable"), args, replace);
                 }
@@ -151,6 +178,14 @@ public class Engine {
                         log.info("Replace for {} not applied due to FIELD_ONLY restriction", rule.get("variable"));
                     } else {
                         log.debug("Found data without seasonal_dome_applied set.");
+                        Assume.run(data, rule.get("variable"), args, replace);
+                    }
+                } else if (cmd.equals("REPLACE_STRATEGY_ONLY")) {
+                    log.debug("Found STRATEGY_ONLY replace");
+                    if (!data.containsKey("seasonal_dome_applied")) {
+                        log.info("Replace for {} not applied due to STRATEGY_ONLY restriction", rule.get("variable"));
+                    } else {
+                        log.debug("Found data with seasonal_dome_applied set.");
                         Assume.run(data, rule.get("variable"), args, replace);
                     }
                 } else {
@@ -462,9 +497,13 @@ public class Engine {
     }
 
     public boolean updateWSRef(HashMap<String, Object> exp, boolean isStgDome, boolean isStgMode) {
-        HashMap newRule;
+
         boolean isClimIDchanged = false;
         for (HashMap<String, String> rule : rules) {
+//            if (isSkippedRule(rule)) {
+//                continue;
+//            }
+            boolean isSkippedRule = isSkippedRule(rule);
             String var = MapUtil.getValueOr(rule, "variable", "").toLowerCase();
             String cmd = MapUtil.getValueOr(rule, "cmd", "").toUpperCase();
             if (var.equals("clim_id")) {
@@ -476,24 +515,14 @@ public class Engine {
                 }
 
                 // scan seasonal strategy dome, or overlay dome in overlay mode
-                if (isStgDome || (!isStgMode && val.startsWith("0"))) {
-                    if (wst_id.length() > 4) {
-                        wst_id = wst_id.substring(0, 4) + val;
-                    } else if (wst_id.length() > 0) {
-                        wst_id += val;
-                    }
-                    newRule = new HashMap();
-                    newRule.put("cmd", "REPLACE");
-                    newRule.put("args", wst_id);
-                    newRule.put("variable", "wst_id");
-                    applyRule(exp, newRule);
+                if (!isSkippedRule && (isStgDome || (!isStgMode && val.startsWith("0")))) {
                     exp.remove("soil");
                     exp.remove("weather");
                     exp.put("clim_id", val);
                     isClimIDchanged = true;
                 }
 
-                if (!isStgMode && !val.startsWith("0")) {
+                if (!isSkippedRule && !isStgMode && !val.startsWith("0")) {
                     log.warn("Invalid CLIM_ID assigned for baseline weather data: {}", val);
                 }
 
@@ -502,12 +531,14 @@ public class Engine {
                     rule.put("cmd", "INFO");
                 }
             } else if (var.equals("wst_id") || var.equals("soil_id")) {
-                if (!cmd.equals("FILL")) {
-                    rule.put("cmd", "REPLACE");
+                if (!isSkippedRule) {
+                    if (!cmd.equals("FILL")) {
+                        rule.put("cmd", "REPLACE");
+                    }
+                    exp.remove("soil");
+                    exp.remove("weather");
+                    applyRule(exp, rule);
                 }
-                applyRule(exp, rule);
-                exp.remove("soil");
-                exp.remove("weather");
                 // Commented this statement to avoid destroy the updated linkage
                 if (!cmd.equals("FILL")) {
                     rule.put("cmd", "INFO");
@@ -601,7 +632,7 @@ public class Engine {
         return wRules;
     }
 
-    private ArrayList<HashMap<String, String>> extractSoilRules(ArrayList<HashMap<String, String>> rules) {
+    protected ArrayList<HashMap<String, String>> extractSoilRules(ArrayList<HashMap<String, String>> rules) {
         ArrayList<HashMap<String, String>> swRules = new ArrayList<HashMap<String, String>>();
         for (HashMap<String, String> rule : rules) {
             if (isSoilRules(rule)) {
@@ -611,7 +642,7 @@ public class Engine {
         return swRules;
     }
 
-    private ArrayList<HashMap<String, String>> extractWthRules(ArrayList<HashMap<String, String>> rules) {
+    protected ArrayList<HashMap<String, String>> extractWthRules(ArrayList<HashMap<String, String>> rules) {
         ArrayList<HashMap<String, String>> swRules = new ArrayList<HashMap<String, String>>();
         for (HashMap<String, String> rule : rules) {
             if (isWthRules(rule)) {
@@ -621,10 +652,10 @@ public class Engine {
         return swRules;
     }
 
-    private boolean isSoilRules(HashMap<String, String> rule) {
+    protected boolean isSoilRules(HashMap<String, String> rule) {
         boolean isSWRule = false;
         String cmd = rule.get("cmd").toUpperCase();
-        String var = rule.get("variable");
+        String var = rule.get("variable").toLowerCase();
 
         // NPE defender
         if (var == null) {
@@ -640,7 +671,7 @@ public class Engine {
 
         if (cmd.equals("INFO")) {
             log.debug("Recevied an INFO command");
-        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY")) {
+        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY") || cmd.equals("REPLACE_STRATEGY_ONLY")) {
             // If it is simple calculation or set value directly to the soil/weather variable
             if (!args[0].endsWith("()")
                     || args[0].equals("OFFSET()")
@@ -649,7 +680,8 @@ public class Engine {
                     || args[0].equals("DATE_OFFSET()")
                     || args[0].equals("ROOT_DIST()")
                     || args[0].equals("LYRSET()")
-                    || args[0].equals("TRANSPOSE()")) {
+                    || args[0].equals("TRANSPOSE()")
+                    || args[0].equals("REDUCEWP()")) {
                 if (!var.equals("soil_id")) {
                     String path = Command.getPathOrRoot(var);
                     String[] paths = path.split(",");
@@ -669,10 +701,10 @@ public class Engine {
         return isSWRule;
     }
 
-    private boolean isWthRules(HashMap<String, String> rule) {
+    protected boolean isWthRules(HashMap<String, String> rule) {
         boolean isWRule = false;
         String cmd = rule.get("cmd").toUpperCase();
-        String var = rule.get("variable");
+        String var = rule.get("variable").toLowerCase();
 
         // NPE defender
         if (var == null) {
@@ -688,7 +720,7 @@ public class Engine {
 
         if (cmd.equals("INFO")) {
             log.debug("Recevied an INFO command");
-        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY")) {
+        } else if (cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY") || cmd.equals("REPLACE_STRATEGY_ONLY")) {
             // If it is simple calculation or set value directly to the soil/weather variable
             if (!args[0].endsWith("()")
                     || args[0].equals("OFFSET()")
@@ -697,7 +729,8 @@ public class Engine {
                     || args[0].equals("DATE_OFFSET()")
                     || args[0].equals("ROOT_DIST()")
                     || args[0].equals("LYRSET()")
-                    || args[0].equals("TRANSPOSE()")) {
+                    || args[0].equals("TRANSPOSE()")
+                    || args[0].equals("REDUCEWP()")) {
                 if (!var.equals("wst_id") && !var.equals("clim_id")) {
                     String path = Command.getPathOrRoot(var);
                     String[] paths = path.split(",");
@@ -714,5 +747,42 @@ public class Engine {
             }
         }
         return isWRule;
+    }
+    
+    protected ArrayList<String> modifiedVarList(ArrayList<HashMap<String, String>> rules) {
+        ArrayList<String> ret = new ArrayList<String>();
+        for (HashMap<String, String> rule : rules) {
+            String var = rule.get("variable").toLowerCase();
+            String cmd = rule.get("cmd").toUpperCase();
+            if (!cmd.equals("INFO") || var.equals("wst_id") || var.equals("clim_id")) {
+                ret.add(var);
+            }
+        }
+        return ret;
+    }
+
+    public ArrayList<String> modifiedVarList() {
+        ArrayList<String> ret;
+        if (allowGenerators) {
+            ret  = new ArrayList<String>();
+            for (ArrayList<HashMap<String, String>> genGroup : genGroups) {
+                ret.addAll(modifiedVarList(genGroup));
+            }
+        } else {
+            ret = modifiedVarList(rules);
+        }
+        isSWExtracted = true;
+
+        return ret;
+    }
+    
+    protected boolean isSkippedRule(HashMap<String, String> rule) {
+        String var = rule.get("variable");
+        if (var == null) {
+            return true;
+        } else {
+            var = var.toLowerCase();
+        }
+        return skipVarList.contains(var);
     }
 }

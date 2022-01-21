@@ -281,6 +281,14 @@ public class Calculate extends Command {
             } else if (path.contains("initial_conditions")) {
                 isICLayers = true;
             }
+            int topLyrNum = 2;
+            String[] lyrThk = {"10", "10"};
+            if (newArgs.length > topLyrNum) {
+                log.warn("Too many top layer thickness for {}, will only apply first {} layer thickness", fun, topLyrNum);
+            }
+            for (int i = 0; i < lyrThk.length && i < newArgs.length; i++) {
+                lyrThk[i] = newArgs[i];
+            }
             HashMap soilData;
             if (!isICLayers) {
                 soilData = MapUtil.getObjectOr(m, "soil", new HashMap());
@@ -302,7 +310,7 @@ public class Calculate extends Command {
             if (newArgs.length != 0) {
                 log.warn("Too many arguments for {}", fun);
             }
-            ArrayList<HashMap<String, String>> newLayers = SoilHelper.splittingSoillayer(m, isICLayers);
+            ArrayList<HashMap<String, String>> newLayers = SoilHelper.splittingSoillayer(m, isICLayers, lyrThk[0], lyrThk[1]);
             ArrayList<HashMap<String, String>> layers = new MapUtil.BucketEntry(soilData).getDataList();
             if (newLayers.size() > layers.size()) {
 //                    layers.clear();
@@ -334,6 +342,65 @@ public class Calculate extends Command {
 //                soilData.put("applied_dome_functions", appliedDomeFuns);
 //            }
 //            mapModified = true;
+        } else if (fun.equals("SHIFT_EVENTS()")) {
+            if (newArgs.length < 2) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            } else if (newArgs.length > 2) {
+                log.warn("Too much arguments for {}", fun);
+            }
+            String shiftType = newArgs[0];
+            String days;
+            if ("ABSOLUTE".equalsIgnoreCase(shiftType)) {
+                String pdate = ExperimentHelper.getFstPdate(m, "");
+                if (pdate.equals("")) {
+                    log.error("Can not find original PDATE for {}", fun);
+                    return;
+                }
+                days = Functions.calcDAP(newArgs[1], pdate);
+            } else if ("RELATIVE".equalsIgnoreCase(shiftType)) {
+                days = newArgs[1];
+            } else {
+                log.error("Unrecognized shift type for {}", fun);
+                return;
+            }
+            ExperimentHelper.shiftEvents(m, days);
+            mapModified = true;
+        } else if (fun.equals("CTWN_FUN()")) {
+            if (newArgs.length < 1) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            } else if (newArgs.length > 6) {
+                log.warn("Too much arguments for {}", fun);
+            }
+            String[] newArgs2 = {"", "", "", "", "", ""};
+            for (int i = 0; i < newArgs.length; i++) {
+                newArgs2[i] = newArgs[i];
+            }
+            ExperimentHelper.setCTWNAdjustments(m, newArgs2[0], newArgs2[1], newArgs2[2], newArgs2[3], newArgs2[4], newArgs2[5]);
+            mapModified = true;
+        } else if (fun.equals("CLIM_CO2()")) {
+            if (newArgs.length < 1) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            } else if (newArgs.length > 2) {
+                log.warn("Too much arguments for {}", fun);
+            }
+            String[] newArgs2 = {"", "", "", "", "", newArgs[0]};
+            if (newArgs.length > 1) {
+                newArgs2[0] = newArgs[1];
+            }
+            ExperimentHelper.setCTWNAdjustments(m, newArgs2[0], newArgs2[1], newArgs2[2], newArgs2[3], newArgs2[4], newArgs2[5]);
+            mapModified = true;
+        } else if (fun.equals("REDUCEWP()")) {
+            if (newArgs.length < 1) {
+                log.error("Not enough arguments for {}", fun);
+                return;
+            } else if (newArgs.length > 2) {
+                log.warn("Too much arguments for {}", fun);
+            }
+            calcResults = SoilHelper.reduceWP(m, newArgs[0]);
+            mapModified = false;
         } else {
             log.error("DOME Function {} unsupported", fun);
             return;
